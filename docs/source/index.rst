@@ -15,9 +15,9 @@ GeoSmith does not aim to replace full GIS platforms. It provides a clean, reprod
    :maxdepth: 2
    :caption: Contents:
 
-   getting_started.md
-   architecture.md
-   design_decisions.md
+   getting_started
+   architecture
+   design_decisions
    api
 
 Indices and tables
