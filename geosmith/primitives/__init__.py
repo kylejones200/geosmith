@@ -72,6 +72,19 @@ from geosmith.primitives.petrophysics import (
     preprocess_avo_inputs,
 )
 from geosmith.primitives.raster import grid_resample, zonal_reduce
+
+# Optional feature engineering (requires scikit-learn)
+try:
+    from geosmith.primitives.features import (
+        build_block_model_features,
+        build_spatial_features,
+    )
+
+    FEATURES_AVAILABLE = True
+except ImportError:
+    FEATURES_AVAILABLE = False
+    build_spatial_features = None  # type: ignore
+    build_block_model_features = None  # type: ignore
 from geosmith.primitives.simulation import (
     compute_exceedance_probability,
     compute_simulation_statistics,
@@ -92,6 +105,8 @@ __all__ = [
     "BaseSpatialModel",
     "BaseTransformer",
     "bounding_box",
+    "build_block_model_features",
+    "build_spatial_features",
     "calculate_avo_attributes",
     "calculate_avo_from_slowness",
     "calculate_bulk_volume_water",
@@ -145,4 +160,9 @@ __all__ = [
 # Conditionally add kriging exports if available
 if KRIGING_AVAILABLE:
     __all__.extend(["KrigingResult", "OrdinaryKriging"])
+
+# Conditionally add feature engineering exports if available
+if FEATURES_AVAILABLE:
+    # Already in __all__, but we can add them conditionally if needed
+    pass
 
