@@ -27,10 +27,26 @@ try:
     SKLEARN_AVAILABLE = True
 except ImportError:
     SKLEARN_AVAILABLE = False
-    RandomForestClassifier = None  # type: ignore
-    SVC = None  # type: ignore
-    Pipeline = None  # type: ignore
-    StandardScaler = None  # type: ignore
+    # Create dummy classes for type hints
+    from abc import ABC
+
+    class RandomForestClassifier(ABC):  # type: ignore
+        pass
+
+    class SVC(ABC):  # type: ignore
+        pass
+
+    class Pipeline(ABC):  # type: ignore
+        pass
+
+    class StandardScaler(ABC):  # type: ignore
+        pass
+
+    def train_test_split(*args, **kwargs):  # type: ignore
+        raise ImportError("scikit-learn is required for FaciesTask")
+
+    def classification_report(*args, **kwargs):  # type: ignore
+        raise ImportError("scikit-learn is required for FaciesTask")
 
 
 @dataclass

@@ -9,7 +9,21 @@ from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import BaseCrossValidator
+
+# Optional scikit-learn dependency
+try:
+    from sklearn.model_selection import BaseCrossValidator
+
+    SKLEARN_AVAILABLE = True
+except ImportError:
+    SKLEARN_AVAILABLE = False
+    # Create a dummy BaseCrossValidator for type hints
+    from abc import ABC
+
+    class BaseCrossValidator(ABC):  # type: ignore
+        """Placeholder for BaseCrossValidator when sklearn is not available."""
+
+        pass
 
 logger = logging.getLogger(__name__)
 
