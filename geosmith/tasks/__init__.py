@@ -9,6 +9,25 @@ from geosmith.tasks.blockmodeltask import BlockModelTask
 from geosmith.tasks.changetask import ChangeTask
 from geosmith.tasks.featuretask import FeatureTask
 from geosmith.tasks.rastertask import RasterTask
+
+# Optional stratigraphy (requires ruptures and scipy)
+try:
+    from geosmith.tasks.stratigraphy import (
+        ChangePointResult,
+        StratigraphyTask,
+        detect_bayesian_online,
+        detect_pelt,
+        preprocess_log,
+    )
+
+    STRATIGRAPHY_AVAILABLE = True
+except ImportError:
+    STRATIGRAPHY_AVAILABLE = False
+    ChangePointResult = None  # type: ignore
+    StratigraphyTask = None  # type: ignore
+    detect_bayesian_online = None  # type: ignore
+    detect_pelt = None  # type: ignore
+    preprocess_log = None  # type: ignore
 from geosmith.tasks.routetask import RouteTask
 
 # Optional facies classification (requires scikit-learn)
@@ -37,6 +56,7 @@ __all__ = [
     "FeatureTask",
     "RasterTask",
     "RouteTask",
+    "StratigraphyTask",
 ]
 
 # Conditionally add ML exports if available
@@ -44,4 +64,14 @@ if FACIES_AVAILABLE:
     __all__.extend(["FaciesResult", "FaciesTask"])
 if CV_AVAILABLE:
     __all__.extend(["SpatialKFold", "WellBasedKFold"])
+if STRATIGRAPHY_AVAILABLE:
+    __all__.extend(
+        [
+            "ChangePointResult",
+            "StratigraphyTask",
+            "detect_bayesian_online",
+            "detect_pelt",
+            "preprocess_log",
+        ]
+    )
 

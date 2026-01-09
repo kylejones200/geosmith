@@ -1,7 +1,8 @@
 """Petrophysics calculation primitives.
 
 Pure petrophysics operations.
-Migrated from geosuite.petro.archie and geosuite.petro.permeability.
+Migrated from geosuite.petro.archie, geosuite.petro.permeability,
+geosuite.petro.shaly_sand, and geosuite.petro.rock_physics.
 Layer 2: Primitives - Pure operations.
 """
 
@@ -369,4 +370,554 @@ def calculate_permeability_porosity_only(
     k_md = np.clip(k_md, 0.001, 1e6)
 
     return k_md
+
+
+# Shaly Sand Water Saturation Models
+# Migrated from geosuite.petro.shaly_sand
+
+
+def calculate_water_saturation_simandoux(
+    phi: Union[np.ndarray, float],
+    rt: Union[np.ndarray, float],
+    rsh: Union[np.ndarray, float],
+    vsh: Union[np.ndarray, float],
+    rw: float = 0.05,
+    m: float = 2.0,
+    n: float = 2.0,
+    a: float = 1.0,
+) -> np.ndarray:
+    """Calculate water saturation using Simandoux equation for shaly sands.
+
+    The Simandoux equation accounts for clay conductivity in shaly formations:
+    Sw = sqrt((a * Rw) / (phi^m * (1/Rt - Vsh/Rsh)))
+
+    Args:
+        phi: Porosity (fraction).
+        rt: True resistivity (ohm-m).
+        rsh: Shale resistivity (ohm-m).
+        vsh: Shale volume fraction (fraction).
+        rw: Formation water resistivity (ohm-m, default 0.05).
+        m: Cementation exponent (default 2.0).
+        n: Saturation exponent (default 2.0, typically 2.0 for Simandoux).
+        a: Tortuosity factor (default 1.0).
+
+    Returns:
+        Water saturation (fraction).
+
+    Example:
+        >>> from geosmith.primitives.petrophysics import calculate_water_saturation_simandoux
+        >>>
+        >>> sw = calculate_water_saturation_simandoux(
+        ...     phi=0.25, rt=10.0, rsh=2.0, vsh=0.3, rw=0.05
+        ... )
+        >>> print(f"Water saturation: {sw:.2%}")
+    """
+    # Convert to numpy arrays
+    phi = np.asarray(phi, dtype=float)
+    rt = np.asarray(rt, dtype=float)
+    rsh = np.asarray(rsh, dtype=float)
+    vsh = np.asarray(vsh, dtype=float)
+
+    # Validate inputs
+    lengths = [len(phi), len(rt), len(rsh), len(vsh)]
+    if len(set(lengths)) > 1:
+        raise ValueError(
+            f"All input arrays must have the same length. "
+            f"Got lengths: phi={lengths[0]}, rt={lengths[1]}, rsh={lengths[2]}, vsh={lengths[3]}"
+        )
+
+    if np.any(phi <= 0):
+        logger.warning("Found non-positive porosity values, will result in NaN")
+    if np.any(rt <= 0):
+        logger.warning("Found non-positive resistivity values, will result in NaN")
+    if np.any(rsh <= 0):
+        logger.warning("Found non-positive shale resistivity values, will result in NaN")
+    if np.any((vsh < 0) | (vsh > 1)):
+        logger.warning("Found shale volume outside [0, 1], clipping to valid range")
+        vsh = np.clip(vsh, 0, 1)
+
+    logger.debug(
+        f"Calculating water saturation using Simandoux equation for {len(phi)} samples"
+    )
+
+    # Simandoux equation: Sw = sqrt((a * Rw) / (phi^m * (1/Rt - Vsh/Rsh)))
+    with np.errstate(divide="ignore", invalid="ignore"):
+        # Calculate clay conductivity term
+        clay_conductivity = vsh / rsh
+
+        # Calculate sand conductivity
+        sand_conductivity = 1.0 / rt
+
+        # Net conductivity (sand minus clay)
+        net_conductivity = sand_conductivity - clay_conductivity
+
+        # Avoid division by zero
+        net_conductivity = np.where(net_conductivity <= 0, np.nan, net_conductivity)
+
+        # Calculate water saturation
+        numerator = a * rw
+        denominator = (phi**m) * net_conductivity
+        sw = np.sqrt(numerator / denominator)
+
+    # Clip to valid range
+    sw = np.clip(sw, 0, 1)
+
+    # Count NaN values
+    nan_count = np.isnan(sw).sum()
+    if nan_count > 0:
+        logger.warning(f"Generated {nan_count} NaN values in Simandoux calculation")
+
+    return sw
+
+
+def calculate_water_saturation_indonesia(
+    phi: Union[np.ndarray, float],
+    rt: Union[np.ndarray, float],
+    rsh: Union[np.ndarray, float],
+    vsh: Union[np.ndarray, float],
+    rw: float = 0.05,
+    m: float = 2.0,
+    n: float = 2.0,
+    a: float = 1.0,
+) -> np.ndarray:
+    """Calculate water saturation using Indonesia equation for shaly sands.
+
+    The Indonesia equation is an improved version of Simandoux that better
+    handles high shale volumes:
+    Sw = [sqrt((a * Rw) / (phi^m * Rt)) + sqrt(Vsh * Rw / Rsh))]^(-2/n)
+
+    Args:
+        phi: Porosity (fraction).
+        rt: True resistivity (ohm-m).
+        rsh: Shale resistivity (ohm-m).
+        vsh: Shale volume fraction (fraction).
+        rw: Formation water resistivity (ohm-m, default 0.05).
+        m: Cementation exponent (default 2.0).
+        n: Saturation exponent (default 2.0).
+        a: Tortuosity factor (default 1.0).
+
+    Returns:
+        Water saturation (fraction).
+
+    Example:
+        >>> from geosmith.primitives.petrophysics import calculate_water_saturation_indonesia
+        >>>
+        >>> sw = calculate_water_saturation_indonesia(
+        ...     phi=0.25, rt=10.0, rsh=2.0, vsh=0.3, rw=0.05
+        ... )
+        >>> print(f"Water saturation: {sw:.2%}")
+    """
+    # Convert to numpy arrays
+    phi = np.asarray(phi, dtype=float)
+    rt = np.asarray(rt, dtype=float)
+    rsh = np.asarray(rsh, dtype=float)
+    vsh = np.asarray(vsh, dtype=float)
+
+    # Validate inputs
+    lengths = [len(phi), len(rt), len(rsh), len(vsh)]
+    if len(set(lengths)) > 1:
+        raise ValueError(
+            f"All input arrays must have the same length. "
+            f"Got lengths: phi={lengths[0]}, rt={lengths[1]}, rsh={lengths[2]}, vsh={lengths[3]}"
+        )
+
+    # Vectorized validation checks
+    validation_checks = {
+        "non-positive porosity": np.any(phi <= 0),
+        "non-positive resistivity": np.any(rt <= 0),
+        "non-positive shale resistivity": np.any(rsh <= 0),
+        "shale volume out of range": np.any((vsh < 0) | (vsh > 1)),
+    }
+
+    for check_name, check_result in validation_checks.items():
+        if check_result:
+            logger.warning(f"Found {check_name}, may result in invalid values")
+
+    vsh = np.clip(vsh, 0, 1)
+
+    logger.debug(
+        f"Calculating water saturation using Indonesia equation for {len(phi)} samples"
+    )
+
+    # Indonesia equation: Sw = [sqrt((a * Rw) / (phi^m * Rt)) + sqrt(Vsh * Rw / Rsh))]^(-2/n)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        # Archie term
+        archie_term = np.sqrt((a * rw) / ((phi**m) * rt))
+
+        # Shale term
+        shale_term = np.sqrt(vsh * rw / rsh)
+
+        # Combined term
+        combined = archie_term + shale_term
+
+        # Avoid division by zero
+        combined = np.where(combined <= 0, np.nan, combined)
+
+        # Calculate water saturation
+        sw = np.power(combined, -2.0 / n)
+
+    # Clip to valid range
+    sw = np.clip(sw, 0, 1)
+
+    # Count NaN values
+    nan_count = np.isnan(sw).sum()
+    if nan_count > 0:
+        logger.warning(f"Generated {nan_count} NaN values in Indonesia calculation")
+
+    return sw
+
+
+def calculate_water_saturation_waxman_smits(
+    phi: Union[np.ndarray, float],
+    rt: Union[np.ndarray, float],
+    cec: Union[np.ndarray, float],
+    rw: float = 0.05,
+    m: float = 2.0,
+    n: float = 2.0,
+    a: float = 1.0,
+    b: Optional[float] = None,
+    temperature: float = 25.0,
+) -> np.ndarray:
+    """Calculate water saturation using Waxman-Smits equation for shaly sands.
+
+    The Waxman-Smits model accounts for clay cation exchange capacity (CEC)
+    and is more physically-based than Simandoux:
+    Sw = [sqrt((a * Rw) / (phi^m * Rt)) + B * Qv * Rw]^(-2/n)
+
+    where Qv is the cation exchange capacity per unit pore volume.
+
+    Args:
+        phi: Porosity (fraction).
+        rt: True resistivity (ohm-m).
+        cec: Cation exchange capacity (meq/100g).
+        rw: Formation water resistivity (ohm-m, default 0.05).
+        m: Cementation exponent (default 2.0).
+        n: Saturation exponent (default 2.0).
+        a: Tortuosity factor (default 1.0).
+        b: Equivalent counterion conductance (mho/m per meq/ml). If None, calculated from temperature.
+        temperature: Formation temperature (°C, default 25.0) for B calculation if b is None.
+
+    Returns:
+        Water saturation (fraction).
+
+    Example:
+        >>> from geosmith.primitives.petrophysics import calculate_water_saturation_waxman_smits
+        >>>
+        >>> sw = calculate_water_saturation_waxman_smits(
+        ...     phi=0.25, rt=10.0, cec=5.0, rw=0.05
+        ... )
+        >>> print(f"Water saturation: {sw:.2%}")
+    """
+    # Convert to numpy arrays
+    phi = np.asarray(phi, dtype=float)
+    rt = np.asarray(rt, dtype=float)
+    cec = np.asarray(cec, dtype=float)
+
+    # Validate inputs
+    lengths = [len(phi), len(rt), len(cec)]
+    if len(set(lengths)) > 1:
+        raise ValueError(
+            f"All input arrays must have the same length. "
+            f"Got lengths: phi={lengths[0]}, rt={lengths[1]}, cec={lengths[2]}"
+        )
+
+    # Vectorized validation checks
+    validation_checks = {
+        "non-positive porosity": np.any(phi <= 0),
+        "non-positive resistivity": np.any(rt <= 0),
+        "negative CEC": np.any(cec < 0),
+    }
+
+    for check_name, check_result in validation_checks.items():
+        if check_result:
+            logger.warning(f"Found {check_name}, may result in invalid values")
+
+    logger.debug(
+        f"Calculating water saturation using Waxman-Smits equation for {len(phi)} samples"
+    )
+
+    # Calculate B (equivalent counterion conductance) if not provided
+    if b is None:
+        # B = 4.6 * (1 - 0.6 * exp(-0.77 / Rw)) at 25°C
+        # Temperature correction: B(T) = B(25) * (1 + 0.02 * (T - 25))
+        b_25 = 4.6 * (1 - 0.6 * np.exp(-0.77 / rw))
+        b_val = b_25 * (1 + 0.02 * (temperature - 25.0))
+        logger.debug(f"Calculated B = {b_val:.4f} mho/m per meq/ml at {temperature}°C")
+    else:
+        b_val = b
+
+    # Convert CEC to Qv (meq/ml pore volume)
+    # Qv = CEC * (1 - phi) * rho_grain / (phi * 100)
+    # Simplified: assume rho_grain = 2.65 g/cc
+    rho_grain = 2.65
+    qv = cec * (1 - phi) * rho_grain / (phi * 100.0)
+
+    # Waxman-Smits equation: Sw = [sqrt((a * Rw) / (phi^m * Rt)) + B * Qv * Rw]^(-2/n)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        # Archie term
+        archie_term = np.sqrt((a * rw) / ((phi**m) * rt))
+
+        # Clay conductivity term
+        clay_term = b_val * qv * rw
+
+        # Combined term
+        combined = archie_term + clay_term
+
+        # Avoid division by zero
+        combined = np.where(combined <= 0, np.nan, combined)
+
+        # Calculate water saturation
+        sw = np.power(combined, -2.0 / n)
+
+    # Clip to valid range
+    sw = np.clip(sw, 0, 1)
+
+    # Count NaN values
+    nan_count = np.isnan(sw).sum()
+    if nan_count > 0:
+        logger.warning(f"Generated {nan_count} NaN values in Waxman-Smits calculation")
+
+    return sw
+
+
+# Rock Physics Functions
+# Migrated from geosuite.petro.rock_physics
+
+
+def gassmann_fluid_substitution(
+    k_sat_initial: Union[np.ndarray, float],
+    k_dry: Union[np.ndarray, float],
+    k_mineral: Union[float, np.ndarray],
+    k_fluid_initial: Union[float, np.ndarray],
+    k_fluid_final: Union[float, np.ndarray],
+    phi: Union[np.ndarray, float],
+) -> np.ndarray:
+    """Perform Gassmann fluid substitution to predict bulk modulus after fluid change.
+
+    Gassmann's equation predicts how bulk modulus changes when pore fluid
+    is replaced, assuming constant pore pressure and no chemical interactions.
+
+    K_sat_final = K_dry + (1 - K_dry/K_mineral)^2 / (phi/K_fluid_final + (1-phi)/K_mineral - K_dry/K_mineral^2)
+
+    Args:
+        k_sat_initial: Initial saturated bulk modulus (GPa).
+        k_dry: Dry frame bulk modulus (GPa).
+        k_mineral: Mineral bulk modulus (GPa). Typical values:
+            - Quartz: 37 GPa
+            - Calcite: 77 GPa
+            - Dolomite: 95 GPa
+        k_fluid_initial: Initial fluid bulk modulus (GPa). Typical values:
+            - Water: 2.2 GPa
+            - Oil: 0.5-2.0 GPa
+            - Gas: 0.01-0.1 GPa
+        k_fluid_final: Final fluid bulk modulus (GPa).
+        phi: Porosity (fraction).
+
+    Returns:
+        Final saturated bulk modulus (GPa).
+
+    Example:
+        >>> from geosmith.primitives.petrophysics import gassmann_fluid_substitution
+        >>>
+        >>> k_final = gassmann_fluid_substitution(
+        ...     k_sat_initial=20.0, k_dry=15.0, k_mineral=37.0,
+        ...     k_fluid_initial=2.2, k_fluid_final=0.05, phi=0.25
+        ... )
+        >>> print(f"Final bulk modulus: {k_final:.2f} GPa")
+    """
+    # Convert to numpy arrays
+    phi = np.asarray(phi, dtype=float)
+    k_sat_initial = np.asarray(k_sat_initial, dtype=float)
+    k_dry = np.asarray(k_dry, dtype=float)
+
+    # Broadcast scalars to arrays
+    k_mineral = (
+        np.full_like(phi, k_mineral)
+        if isinstance(k_mineral, (int, float))
+        else np.asarray(k_mineral, dtype=float)
+    )
+    k_fluid_initial = (
+        np.full_like(phi, k_fluid_initial)
+        if isinstance(k_fluid_initial, (int, float))
+        else np.asarray(k_fluid_initial, dtype=float)
+    )
+    k_fluid_final = (
+        np.full_like(phi, k_fluid_final)
+        if isinstance(k_fluid_final, (int, float))
+        else np.asarray(k_fluid_final, dtype=float)
+    )
+
+    # Validate inputs
+    lengths = [
+        len(k_sat_initial),
+        len(k_dry),
+        len(k_mineral),
+        len(k_fluid_initial),
+        len(k_fluid_final),
+        len(phi),
+    ]
+    if len(set(lengths)) > 1:
+        raise ValueError(
+            f"All input arrays must have the same length. Got lengths: {lengths}"
+        )
+
+    validation_checks = {
+        "porosity outside (0, 1)": np.any((phi <= 0) | (phi >= 1)),
+        "non-positive bulk moduli": np.any((k_dry <= 0) | (k_mineral <= 0)),
+    }
+
+    for check_name, check_result in validation_checks.items():
+        if check_result:
+            logger.warning(f"Found {check_name}, results may be invalid")
+
+    logger.debug(
+        f"Performing Gassmann fluid substitution for {len(phi)} samples"
+    )
+
+    # Gassmann's equation
+    # K_sat = K_dry + (1 - K_dry/K_mineral)^2 / (phi/K_fluid + (1-phi)/K_mineral - K_dry/K_mineral^2)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        # Calculate denominator
+        term1 = phi / k_fluid_final
+        term2 = (1 - phi) / k_mineral
+        term3 = k_dry / (k_mineral**2)
+        denominator = term1 + term2 - term3
+
+        # Avoid division by zero
+        denominator = np.where(denominator <= 0, np.nan, denominator)
+
+        # Calculate numerator
+        numerator = (1 - k_dry / k_mineral) ** 2
+
+        # Calculate final saturated bulk modulus
+        k_sat_final = k_dry + numerator / denominator
+
+    # Count NaN values
+    nan_count = np.isnan(k_sat_final).sum()
+    if nan_count > 0:
+        logger.warning(f"Generated {nan_count} NaN values in Gassmann calculation")
+
+    return k_sat_final
+
+
+def calculate_fluid_bulk_modulus(
+    sw: Union[np.ndarray, float],
+    so: Optional[Union[np.ndarray, float]] = None,
+    sg: Optional[Union[np.ndarray, float]] = None,
+    k_water: float = 2.2,
+    k_oil: float = 1.0,
+    k_gas: float = 0.05,
+    temperature: float = 25.0,
+    pressure: float = 20.0,
+) -> np.ndarray:
+    """Calculate effective fluid bulk modulus from saturations.
+
+    Uses Reuss average (isostress) for fluid mixing:
+    K_fluid = 1 / (Sw/K_water + So/K_oil + Sg/K_gas)
+
+    Args:
+        sw: Water saturation (fraction).
+        so: Oil saturation (fraction). If None, calculated as 1 - Sw - Sg.
+        sg: Gas saturation (fraction). If None, assumed to be 0.
+        k_water: Water bulk modulus (GPa) at standard conditions (default 2.2).
+        k_oil: Oil bulk modulus (GPa) at standard conditions (default 1.0).
+        k_gas: Gas bulk modulus (GPa) at standard conditions (default 0.05).
+        temperature: Temperature (°C) for pressure correction (default 25.0).
+        pressure: Pressure (MPa) for pressure correction (default 20.0).
+
+    Returns:
+        Effective fluid bulk modulus (GPa).
+
+    Example:
+        >>> from geosmith.primitives.petrophysics import calculate_fluid_bulk_modulus
+        >>>
+        >>> k_fluid = calculate_fluid_bulk_modulus(sw=0.3, so=0.5, sg=0.2)
+        >>> print(f"Fluid bulk modulus: {k_fluid:.2f} GPa")
+    """
+    sw = np.asarray(sw, dtype=float)
+
+    # Calculate missing saturations
+    sg = np.zeros_like(sw) if sg is None else np.asarray(sg, dtype=float)
+    so = (1.0 - sw - sg) if so is None else np.asarray(so, dtype=float)
+
+    # Validate and clip saturations
+    saturation_bounds = np.any(
+        [(sw < 0) | (sw > 1), (so < 0) | (so > 1), (sg < 0) | (sg > 1)]
+    )
+    if saturation_bounds:
+        logger.warning("Found saturations outside [0, 1], clipping to valid range")
+
+    sw, so, sg = np.clip(sw, 0, 1), np.clip(so, 0, 1), np.clip(sg, 0, 1)
+
+    # Normalize to ensure Sw + So + Sg = 1
+    total_sat = sw + so + sg
+    sw = sw / total_sat
+    so = so / total_sat
+    sg = sg / total_sat
+
+    # Apply pressure/temperature corrections (simplified)
+    # Gas is most sensitive to pressure
+    k_gas_corrected = k_gas * (1 + 0.01 * pressure)  # Rough correction
+
+    # Reuss average (isostress)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        k_fluid = 1.0 / (sw / k_water + so / k_oil + sg / k_gas_corrected)
+
+    # Handle invalid values
+    k_fluid = np.where(np.isfinite(k_fluid), k_fluid, np.nan)
+
+    logger.debug(f"Calculated fluid bulk modulus for {len(sw)} samples")
+
+    return k_fluid
+
+
+def calculate_density_from_velocity(
+    vp: Union[np.ndarray, float],
+    vs: Optional[Union[np.ndarray, float]] = None,
+    method: str = "gardner",
+) -> np.ndarray:
+    """Estimate density from velocity using empirical relationships.
+
+    Args:
+        vp: P-wave velocity (m/s).
+        vs: S-wave velocity (m/s). If provided, uses more accurate method.
+        method: Method to use: "gardner", "nafe_drake", or "brocher" (default "gardner").
+
+    Returns:
+        Estimated density (g/cc).
+
+    Example:
+        >>> from geosmith.primitives.petrophysics import calculate_density_from_velocity
+        >>>
+        >>> rho = calculate_density_from_velocity(vp=3000.0, method="gardner")
+        >>> print(f"Density: {rho:.2f} g/cc")
+    """
+    vp = np.asarray(vp, dtype=float)
+    vp_km_s = vp / 1000.0
+
+    methods = {
+        "gardner": lambda v: 1.74 * (v**0.25),
+        "nafe_drake": lambda v: 1.5 + 0.5 * v,
+        "brocher": lambda v: (
+            1.6612 * v
+            - 0.4721 * (v**2)
+            + 0.0671 * (v**3)
+            - 0.0043 * (v**4)
+            + 0.000106 * (v**5)
+        ),
+    }
+
+    if method not in methods:
+        raise ValueError(
+            f"Unknown method: {method}. Choose: {', '.join(methods.keys())}"
+        )
+
+    rho = methods[method](vp_km_s)
+
+    # Clip to reasonable range
+    rho = np.clip(rho, 1.0, 3.5)
+
+    logger.debug(f"Estimated density using {method} method for {len(vp)} samples")
+
+    return rho
 

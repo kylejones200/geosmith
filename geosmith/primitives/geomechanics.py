@@ -5,7 +5,7 @@ Migrated from geosuite.geomech.stresses.
 Layer 2: Primitives - Pure operations.
 """
 
-from typing import Union
+from typing import Optional, Union
 
 import numpy as np
 
@@ -365,3 +365,102 @@ def hoek_brown_failure(
 
     return sigma1_fail, safety_factor
 
+
+
+def stress_polygon_limits(
+    sv: Union[np.ndarray, float],
+    pp: Union[np.ndarray, float],
+    shmin: Optional[Union[np.ndarray, float]] = None,
+    mu: float = 0.6,
+    cohesion: float = 0.0,
+) -> dict[str, tuple[Union[np.ndarray, float], Optional[Union[np.ndarray, float]]]]:
+    """Calculate stress polygon limits for faulting regime determination.
+
+    Returns allowable ranges for SHmax based on faulting theory using Mohr-Coulomb
+    failure criterion.
+
+    Args:
+        sv: Vertical stress (MPa).
+        pp: Pore pressure (MPa).
+        shmin: Minimum horizontal stress (MPa), optional.
+        mu: Coefficient of friction (typically 0.6-1.0).
+        cohesion: Cohesion (MPa), typically 0.
+
+    Returns:
+        Dictionary with stress limits for each faulting regime:
+        - 'normal': (min, max) for normal faulting
+        - 'strike_slip': (min, max) for strike-slip faulting
+        - 'reverse': (min, max) for reverse/thrust faulting (max may be None if shmin not provided).
+
+    Example:
+        >>> from geosmith.primitives.geomechanics import stress_polygon_limits
+        >>>
+        >>> limits = stress_polygon_limits(sv=50.0, pp=20.0, shmin=30.0)
+        >>> print(f"Normal faulting range: {limits['normal']}")
+        >>> print(f"Strike-slip range: {limits['strike_slip']}")
+        >>> print(f"Reverse faulting range: {limits['reverse']}")
+    """
+    sv = np.asarray(sv, dtype=float)
+    pp = np.asarray(pp, dtype=float)
+
+    # Broadcast scalars
+    if sv.ndim == 0:
+        sv = sv.reshape(1)
+    if pp.ndim == 0:
+        pp = pp.reshape(1)
+
+    if len(sv) != len(pp):
+        raise ValueError(
+            f"sv ({len(sv)}) and pp ({len(pp)}) must have same length"
+        )
+
+    # Mohr-Coulomb failure criterion
+    q = np.sqrt(mu**2 + 1) + mu
+
+    # Effective stresses
+    sv_eff = sv - pp
+
+    # Normal faulting: Sv > SHmax > Shmin
+    # SHmax_max = Sv
+    # SHmax_min = (Sv - C) / q + Pp
+    nf_max = sv
+    nf_min = (sv_eff - cohesion) / q + pp
+
+    # Strike-slip faulting: SHmax > Sv > Shmin
+    # SHmax_max = q * (Sv - Pp) + C + Pp
+    # SHmax_min = Sv
+    ss_min = sv
+    ss_max = q * sv_eff + cohesion + pp
+
+    # Reverse/Thrust faulting: SHmax > Shmin > Sv
+    # SHmax_min = q * (Sv - Pp) + C + Pp
+    # If Shmin is known: SHmax_max = q * (Shmin - Pp) + C + Pp
+    rf_min = q * sv_eff + cohesion + pp
+    if shmin is not None:
+        shmin = np.asarray(shmin, dtype=float)
+        if shmin.ndim == 0:
+            shmin = shmin.reshape(1)
+        if len(shmin) != len(sv):
+            raise ValueError(
+                f"shmin ({len(shmin)}) must have same length as sv ({len(sv)})"
+            )
+        shmin_eff = shmin - pp
+        rf_max = q * shmin_eff + cohesion + pp
+    else:
+        rf_max = None
+
+    # Convert back to scalars if input was scalar
+    if sv.size == 1:
+        nf_min = float(nf_min[0])
+        nf_max = float(nf_max[0])
+        ss_min = float(ss_min[0])
+        ss_max = float(ss_max[0])
+        if rf_max is not None:
+            rf_max = float(rf_max[0])
+        rf_min = float(rf_min[0])
+
+    return {
+        "normal": (nf_min, nf_max),
+        "strike_slip": (ss_min, ss_max),
+        "reverse": (rf_min, rf_max),
+    }
