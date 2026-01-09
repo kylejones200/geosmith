@@ -1,5 +1,6 @@
 Getting Started
 ===============
 
-.. mdinclude:: getting_started.md
+.. include:: getting_started.md
+   :parser: myst_parser.sphinx_
 

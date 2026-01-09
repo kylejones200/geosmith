@@ -1,5 +1,6 @@
 Design Decisions
 ================
 
-.. mdinclude:: design_decisions.md
+.. include:: design_decisions.md
+   :parser: myst_parser.sphinx_
 
