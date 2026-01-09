@@ -1210,3 +1210,223 @@ def calculate_avo_from_slowness(
     vp, vs = calculate_velocities_from_slowness(dtc, dts, units=units)
     return calculate_avo_attributes(vp, vs, rho, return_all=return_all)
 
+
+
+def calculate_permeability_wyllie_rose(
+    phi: Union[np.ndarray, float],
+    sw: Union[np.ndarray, float],
+    coefficient: float = 0.625,
+    porosity_exponent: float = 6.0,
+    saturation_exponent: float = 2.0,
+) -> np.ndarray:
+    """Calculate permeability using Wyllie-Rose equation.
+
+    k = C * (phi^a) / (sw^b)
+
+    Similar to Timur but with different coefficients.
+    Default coefficients from Wyllie & Rose (1950).
+
+    Args:
+        phi: Porosity (fraction, 0-1).
+        sw: Water saturation (fraction, 0-1).
+        coefficient: Coefficient C (default 0.625).
+        porosity_exponent: Exponent a (default 6.0).
+        saturation_exponent: Exponent b (default 2.0).
+
+    Returns:
+        Permeability in millidarcies (mD).
+
+    Example:
+        >>> from geosmith.primitives.petrophysics import calculate_permeability_wyllie_rose
+        >>>
+        >>> k = calculate_permeability_wyllie_rose(phi=0.25, sw=0.5)
+        >>> print(f"Permeability: {k:.2f} mD")
+    """
+    phi = np.asarray(phi, dtype=float)
+    sw = np.asarray(sw, dtype=float)
+
+    if phi.size == 0 or sw.size == 0:
+        raise ValueError(
+            "Porosity and water saturation arrays must not be empty"
+        )
+
+    if phi.size != sw.size:
+        raise ValueError(
+            "Porosity and water saturation arrays must have same length"
+        )
+
+    phi = np.clip(phi, 0.01, 0.99)
+    sw = np.clip(sw, 0.01, 0.99)
+
+    k_md = coefficient * (phi**porosity_exponent) / (sw**saturation_exponent)
+
+    k_md = np.clip(k_md, 0.001, 1e6)
+
+    return k_md
+
+
+def calculate_permeability_coates_dumanoir(
+    phi: Union[np.ndarray, float],
+    sw: Union[np.ndarray, float],
+    coefficient: float = 70.0,
+    porosity_exponent: float = 2.0,
+    saturation_exponent: float = 2.0,
+) -> np.ndarray:
+    """Calculate permeability using Coates-Dumanoir equation.
+
+    k = C * (phi^a) * ((1 - sw) / sw)^b
+
+    Where irreducible water saturation is accounted for.
+    Default coefficients from Coates & Dumanoir (1973).
+
+    Args:
+        phi: Porosity (fraction, 0-1).
+        sw: Water saturation (fraction, 0-1).
+        coefficient: Coefficient C (default 70.0).
+        porosity_exponent: Exponent a (default 2.0).
+        saturation_exponent: Exponent b (default 2.0).
+
+    Returns:
+        Permeability in millidarcies (mD).
+
+    Example:
+        >>> from geosmith.primitives.petrophysics import calculate_permeability_coates_dumanoir
+        >>>
+        >>> k = calculate_permeability_coates_dumanoir(phi=0.25, sw=0.5)
+        >>> print(f"Permeability: {k:.2f} mD")
+    """
+    phi = np.asarray(phi, dtype=float)
+    sw = np.asarray(sw, dtype=float)
+
+    if phi.size == 0 or sw.size == 0:
+        raise ValueError(
+            "Porosity and water saturation arrays must not be empty"
+        )
+
+    if phi.size != sw.size:
+        raise ValueError(
+            "Porosity and water saturation arrays must have same length"
+        )
+
+    phi = np.clip(phi, 0.01, 0.99)
+    sw = np.clip(sw, 0.01, 0.99)
+
+    k_md = (
+        coefficient
+        * (phi**porosity_exponent)
+        * ((1 - sw) / sw) ** saturation_exponent
+    )
+
+    k_md = np.clip(k_md, 0.001, 1e6)
+
+    return k_md
+
+
+def calculate_permeability_tixier(
+    phi: Union[np.ndarray, float],
+    sw: Union[np.ndarray, float],
+    coefficient: float = 0.136,
+    porosity_exponent: float = 4.4,
+    saturation_exponent: float = 2.0,
+) -> np.ndarray:
+    """Calculate permeability using Tixier equation.
+
+    k = C * (phi^a) / (sw^b)
+
+    Similar to Timur equation. Default coefficients from Tixier (1949).
+
+    Args:
+        phi: Porosity (fraction, 0-1).
+        sw: Water saturation (fraction, 0-1).
+        coefficient: Coefficient C (default 0.136).
+        porosity_exponent: Exponent a (default 4.4).
+        saturation_exponent: Exponent b (default 2.0).
+
+    Returns:
+        Permeability in millidarcies (mD).
+
+    Example:
+        >>> from geosmith.primitives.petrophysics import calculate_permeability_tixier
+        >>>
+        >>> k = calculate_permeability_tixier(phi=0.25, sw=0.5)
+        >>> print(f"Permeability: {k:.2f} mD")
+    """
+    # Tixier uses same form as Timur, just different default coefficients
+    return calculate_permeability_timur(
+        phi, sw, coefficient, porosity_exponent, saturation_exponent
+    )
+
+
+def calculate_porosity_from_density(
+    rhob: Union[np.ndarray, float],
+    rho_matrix: float = 2.65,
+    rho_fluid: float = 1.0,
+) -> np.ndarray:
+    """Calculate porosity from bulk density.
+
+    phi = (rho_matrix - rhob) / (rho_matrix - rho_fluid)
+
+    Args:
+        rhob: Bulk density (g/cc).
+        rho_matrix: Matrix density (g/cc), default 2.65 (quartz).
+        rho_fluid: Fluid density (g/cc), default 1.0 (water).
+
+    Returns:
+        Porosity (fraction, 0-1) as numpy array.
+
+    Example:
+        >>> from geosmith.primitives.petrophysics import calculate_porosity_from_density
+        >>>
+        >>> phi = calculate_porosity_from_density(rhob=2.4, rho_matrix=2.65, rho_fluid=1.0)
+        >>> print(f"Porosity: {phi:.2f}")
+    """
+    rhob = np.asarray(rhob, dtype=float)
+
+    if rhob.size == 0:
+        raise ValueError("Bulk density array must not be empty")
+
+    denominator = rho_matrix - rho_fluid
+    if abs(denominator) < 1e-10:
+        raise ValueError(
+            f"Matrix and fluid densities too similar: {rho_matrix} vs {rho_fluid}"
+        )
+
+    phi = (rho_matrix - rhob) / denominator
+    phi = np.clip(phi, 0, 1)
+
+    return phi
+
+
+def calculate_formation_factor(
+    phi: Union[np.ndarray, float],
+    m: float = 2.0,
+    a: float = 1.0,
+) -> np.ndarray:
+    """Calculate formation resistivity factor.
+
+    F = a / phi^m
+
+    Args:
+        phi: Porosity (fraction, 0-1).
+        m: Cementation exponent (default 2.0).
+        a: Tortuosity factor (default 1.0).
+
+    Returns:
+        Formation factor as numpy array.
+
+    Example:
+        >>> from geosmith.primitives.petrophysics import calculate_formation_factor
+        >>>
+        >>> F = calculate_formation_factor(phi=0.25, m=2.0, a=1.0)
+        >>> print(f"Formation factor: {F:.2f}")
+    """
+    phi = np.asarray(phi, dtype=float)
+
+    if phi.size == 0:
+        raise ValueError("Porosity array must not be empty")
+
+    phi = np.where(phi <= 0, np.nan, phi)
+    F = a / (phi**m)
+
+    return F
+
