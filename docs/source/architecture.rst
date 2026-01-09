@@ -1,0 +1,5 @@
+Architecture
+============
+
+.. mdinclude:: architecture.md
+
