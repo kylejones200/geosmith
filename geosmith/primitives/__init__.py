@@ -85,6 +85,23 @@ from geosmith.primitives.petrophysics import (
 )
 from geosmith.primitives.raster import grid_resample, zonal_reduce
 
+# Optional seismic processing (requires scipy)
+try:
+    from geosmith.primitives.seismic import (
+        apply_phase_shift,
+        compute_hilbert_attributes,
+        correct_trace_phase,
+        estimate_residual_phase,
+    )
+
+    SEISMIC_AVAILABLE = True
+except ImportError:
+    SEISMIC_AVAILABLE = False
+    apply_phase_shift = None  # type: ignore
+    compute_hilbert_attributes = None  # type: ignore
+    correct_trace_phase = None  # type: ignore
+    estimate_residual_phase = None  # type: ignore
+
 # Optional feature engineering (requires scikit-learn)
 try:
     from geosmith.primitives.features import (
@@ -173,6 +190,10 @@ __all__ = [
     "pressure_to_mud_weight",
     "predict_variogram",
     "sequential_gaussian_simulation",
+    "apply_phase_shift",
+    "compute_hilbert_attributes",
+    "correct_trace_phase",
+    "estimate_residual_phase",
     "standardize_crs",
     "stress_polygon_limits",
     "transform_coordinates",
@@ -187,6 +208,11 @@ if KRIGING_AVAILABLE:
 
 # Conditionally add feature engineering exports if available
 if FEATURES_AVAILABLE:
+    # Already in __all__, but we can add them conditionally if needed
+    pass
+
+# Conditionally add seismic processing exports if available
+if SEISMIC_AVAILABLE:
     # Already in __all__, but we can add them conditionally if needed
     pass
 
