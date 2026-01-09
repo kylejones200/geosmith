@@ -8,11 +8,19 @@ from dataclasses import dataclass
 from typing import Optional
 
 import numpy as np
-from scipy.spatial.distance import cdist
 
 from geosmith.objects.pointset import PointSet
 from geosmith.primitives.base import BaseSpatialModel
 from geosmith.primitives.variogram import VariogramModel, predict_variogram
+
+# Optional dependencies
+try:
+    from scipy.spatial.distance import cdist
+
+    SCIPY_AVAILABLE = True
+except ImportError:
+    SCIPY_AVAILABLE = False
+    cdist = None  # type: ignore
 
 try:
     from numba import njit
@@ -142,6 +150,10 @@ class OrdinaryKriging(BaseSpatialModel):
 
         # Compute covariance matrix K
         # For a variogram γ(h), covariance C(h) = sill - γ(h)
+        if not SCIPY_AVAILABLE:
+            raise ImportError(
+                "scipy is required for kriging. Install with: pip install geosmith[primitives] or pip install scipy"
+            )
         distances = cdist(coordinates, coordinates)
         gamma_matrix = predict_variogram(self.variogram_model, distances)
         K = self.variogram_model.sill - gamma_matrix
@@ -206,6 +218,10 @@ class OrdinaryKriging(BaseSpatialModel):
             if NUMBA_AVAILABLE:
                 distances = _compute_distances_fast(target, self.coordinates)  # type: ignore
             else:
+                if not SCIPY_AVAILABLE:
+                    raise ImportError(
+                        "scipy is required for kriging. Install with: pip install geosmith[primitives] or pip install scipy"
+                    )
                 distances = cdist(
                     self.coordinates, target.reshape(1, -1)  # type: ignore
                 ).ravel()

@@ -37,7 +37,17 @@ from geosmith.primitives.geomechanics import (
     pressure_to_mud_weight,
 )
 from geosmith.primitives.interpolation import idw_interpolate, idw_to_raster
-from geosmith.primitives.kriging import KrigingResult, OrdinaryKriging
+
+# Optional kriging (requires scipy)
+try:
+    from geosmith.primitives.kriging import KrigingResult, OrdinaryKriging
+
+    KRIGING_AVAILABLE = True
+except ImportError:
+    KRIGING_AVAILABLE = False
+    KrigingResult = None  # type: ignore
+    OrdinaryKriging = None  # type: ignore
+
 from geosmith.primitives.petrophysics import (
     ArchieParams,
     calculate_bulk_volume_water,
@@ -89,10 +99,8 @@ __all__ = [
     "grid_resample",
     "idw_interpolate",
     "idw_to_raster",
-    "KrigingResult",
     "line_length",
     "nearest_neighbor_search",
-    "OrdinaryKriging",
     "pickett_isolines",
     "point_in_polygon",
     "polygon_area",
@@ -105,4 +113,8 @@ __all__ = [
     "VariogramModel",
     "zonal_reduce",
 ]
+
+# Conditionally add kriging exports if available
+if KRIGING_AVAILABLE:
+    __all__.extend(["KrigingResult", "OrdinaryKriging"])
 

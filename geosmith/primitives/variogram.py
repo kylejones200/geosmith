@@ -8,9 +8,17 @@ from dataclasses import dataclass
 from typing import Callable, Optional
 
 import numpy as np
-from scipy.optimize import curve_fit
 
 from geosmith.objects.pointset import PointSet
+
+# Optional dependencies
+try:
+    from scipy.optimize import curve_fit
+
+    SCIPY_AVAILABLE = True
+except ImportError:
+    SCIPY_AVAILABLE = False
+    curve_fit = None  # type: ignore
 
 try:
     from numba import njit, prange
@@ -241,6 +249,10 @@ def compute_experimental_variogram(
 
     # Determine lag bins
     if max_lag is None:
+        if not SCIPY_AVAILABLE:
+            raise ImportError(
+                "scipy is required for variogram analysis. Install with: pip install geosmith[primitives] or pip install scipy"
+            )
         from scipy.spatial.distance import pdist
 
         distances = pdist(coordinates)
@@ -270,6 +282,10 @@ def compute_experimental_variogram(
         return np.array(lags), np.array(semi_variances), np.array(n_pairs_list)
     else:
         # Fallback to scipy pdist
+        if not SCIPY_AVAILABLE:
+            raise ImportError(
+                "scipy is required for variogram analysis. Install with: pip install geosmith[primitives] or pip install scipy"
+            )
         from scipy.spatial.distance import pdist
 
         distances = pdist(coordinates)
@@ -340,6 +356,10 @@ def fit_variogram_model(
     if model_type == "linear":
         # Linear model has different signature
         try:
+            if not SCIPY_AVAILABLE:
+                raise ImportError(
+                    "scipy is required for variogram fitting. Install with: pip install geosmith[primitives] or pip install scipy"
+                )
             popt, _ = curve_fit(
                 lambda h, n, s: _linear_model(h, n, s),
                 lags,
@@ -360,6 +380,10 @@ def fit_variogram_model(
             partial_sill = slope * range_param
     else:
         try:
+            if not SCIPY_AVAILABLE:
+                raise ImportError(
+                    "scipy is required for variogram fitting. Install with: pip install geosmith[primitives] or pip install scipy"
+                )
             popt, _ = curve_fit(
                 model_func,
                 lags,

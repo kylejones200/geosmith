@@ -18,7 +18,7 @@ requires-python = ">=3.12"
 dependencies = [
   "numpy>=1.24.0",
   "pandas>=2.0.0",
-  "timesmith>=0.1.0",  # Required for SeriesLike, PanelLike, TableLike typing
+  "timesmith>=0.1.5",  # Required for SeriesLike, PanelLike, TableLike typing
 ]
 
 [project.optional-dependencies]
@@ -35,7 +35,7 @@ viz = [
   "matplotlib>=3.7.0",
 ]
 timesmith = [
-  "timesmith>=0.1.0",
+  "timesmith>=0.1.5",
 ]
 plotsmith = [
   "plotsmith>=0.1.0",
