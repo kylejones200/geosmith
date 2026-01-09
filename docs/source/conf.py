@@ -11,7 +11,7 @@ sys.path.insert(0, str(project_root))
 project = "GeoSmith"
 copyright = "2024, Kyle T. Jones"
 author = "Kyle T. Jones"
-release = "0.0.1"
+release = "0.1.0"
 
 # General configuration
 extensions = [
