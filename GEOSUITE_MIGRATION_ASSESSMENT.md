@@ -135,10 +135,11 @@
 ## Migration Priority Recommendations
 
 ### Phase 1: Core Geospatial Operations (High Priority) 🔴
-1. **Drillhole Processing** → Layer 1 objects + Layer 4 workflows
-2. **LAS Loader** → Layer 4 workflows
-3. **CRS Utils** → Layer 2 primitives
-4. **Block Model Export** → Layer 4 workflows
+1. ✅ **Drillhole Processing** → Layer 4 workflows (`geosmith.workflows.drillhole`)
+2. ✅ **LAS Loader** → Layer 4 workflows (`geosmith.workflows.las`)
+3. ✅ **CRS Utils** → Layer 2 primitives (`geosmith.primitives.crs`)
+4. ✅ **Block Model Export** → Layer 4 workflows (`geosmith.workflows.grdecl`)
+5. ✅ **SEG-Y Loader** → Layer 4 workflows (`geosmith.workflows.segy`)
 
 ### Phase 2: Geostatistics (High Priority) 🔴
 5. ✅ **Sequential Gaussian Simulation** → Layer 2 primitives (`geosmith.primitives.simulation`)
@@ -149,12 +150,13 @@
 8. ✅ **Archie Equations** → Layer 2 primitives (`geosmith.primitives.petrophysics`)
 9. ✅ **Stress Calculations** → Layer 2 primitives (`geosmith.primitives.geomechanics`)
 10. ✅ **Pressure Calculations** → Layer 2 primitives (`geosmith.primitives.geomechanics`)
-11. 📋 **Permeability Calculations** → Layer 2 primitives
+11. ✅ **Permeability Calculations** → Layer 2 primitives (`geosmith.primitives.petrophysics`)
+12. ✅ **Failure Criteria** → Layer 2 primitives (`geosmith.primitives.geomechanics`)
 
 ### Phase 4: Machine Learning (Medium Priority) 🟡
-12. **Facies Classifiers** → Layer 3 tasks
-13. **Spatial Cross Validation** → Layer 3 tasks
-14. **ML Feature Engineering** → Layer 2 primitives
+13. ✅ **Facies Classifiers** → Layer 3 tasks (`geosmith.tasks.faciestask`)
+14. ✅ **Spatial Cross Validation** → Layer 3 tasks (`geosmith.tasks.crossvalidation`)
+15. 📋 **ML Feature Engineering** → Layer 2 primitives
 
 ### Phase 5: Domain-Specific (Lower Priority) 🟢
 15. **Forecasting** → Layer 3 tasks

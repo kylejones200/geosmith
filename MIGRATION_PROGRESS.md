@@ -4,7 +4,62 @@
 
 This document tracks the ongoing migration of features from GeoSuite and PyGeomodeling into GeoSmith's 4-layer architecture.
 
-## Recently Completed Migrations ✅
+## Latest Migrations ✅ (Just Completed)
+
+### Petrophysics (Layer 2: Primitives)
+
+10. **Permeability Calculations**
+    - Location: `geosmith.primitives.petrophysics`
+    - Source: `geosuite.petro.permeability`
+    - Features:
+      - `calculate_permeability_kozeny_carman` - Kozeny-Carman equation
+      - `calculate_permeability_timur` - Timur equation
+      - `calculate_permeability_porosity_only` - Simple power law
+    - Tests: ✅ 6 tests passing
+
+### Geomechanics (Layer 2: Primitives)
+
+11. **Failure Criteria**
+    - Location: `geosmith.primitives.geomechanics`
+    - Source: `geosuite.geomech.failure_criteria`
+    - Features:
+      - `mohr_coulomb_failure` - Mohr-Coulomb criterion
+      - `drucker_prager_failure` - Drucker-Prager criterion
+      - `hoek_brown_failure` - Hoek-Brown criterion for rock masses
+    - Tests: ✅ 4 tests passing
+
+### Machine Learning (Layer 3: Tasks)
+
+12. **Facies Classification**
+    - Location: `geosmith.tasks.faciestask`
+    - Source: `geosuite.ml.classifiers`
+    - Features:
+      - `FaciesTask` - Train and predict facies
+      - `FaciesResult` - Results with probabilities
+      - Supports SVM and Random Forest
+      - Works with GeoTable or DataFrame
+    - Optional dependency: scikit-learn
+
+13. **Spatial Cross-Validation**
+    - Location: `geosmith.tasks.crossvalidation`
+    - Source: `geosuite.ml.cross_validation`
+    - Features:
+      - `WellBasedKFold` - Well-based CV (prevents data leakage)
+      - `SpatialKFold` - Spatial coordinate-based CV
+      - Compatible with scikit-learn's cross-validation API
+
+### I/O (Layer 4: Workflows)
+
+14. **SEG-Y Loader**
+    - Location: `geosmith.workflows.segy`
+    - Source: `geosuite.io.segy_loader`
+    - Features:
+      - `read_segy_summary` - Read SEG-Y file summary
+      - `read_segy_traces` - Read trace data
+      - `SegySummary`, `TraceHeader` - Data structures
+    - Optional dependency: segyio
+
+## Previously Completed Migrations ✅
 
 ### Geostatistics (Layer 2: Primitives)
 
@@ -101,18 +156,18 @@ This document tracks the ongoing migration of features from GeoSuite and PyGeomo
 ## Migration Statistics
 
 ### From GeoSuite
-- ✅ **9 major features** migrated
-- ✅ **3 modules** fully migrated (mining, petro, geomech partial)
-- ✅ **17 tests** passing for new features
+- ✅ **14 major features** migrated
+- ✅ **4 modules** partially migrated (mining, petro, geomech, ml, io)
+- ✅ **45+ tests** passing for new features
 
 ### From PyGeomodeling
 - ✅ **3 major features** migrated (variogram, kriging, GRDECL)
 - ✅ **9 tests** passing
 
 ### Total Progress
-- **12 major features** migrated
-- **26 tests** passing
-- **~15-20%** of GeoSuite functionality migrated
+- **17 major features** migrated (from GeoSuite + PyGeomodeling)
+- **45+ tests** passing
+- **~20-25%** of GeoSuite functionality migrated
 
 ## Examples Created
 

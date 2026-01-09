@@ -23,6 +23,12 @@ from geosmith.workflows.io import (
     write_vector,
 )
 from geosmith.workflows.las import read_las
+from geosmith.workflows.segy import (
+    read_segy_summary,
+    read_segy_traces,
+    SegySummary,
+    TraceHeader,
+)
 from geosmith.workflows.workflows import (
     make_features,
     process_raster,
@@ -41,8 +47,12 @@ __all__ = [
     "read_grdecl",
     "read_las",
     "read_raster",
+    "read_segy_summary",
+    "read_segy_traces",
     "read_vector",
     "reproject_to",
+    "SegySummary",
+    "TraceHeader",
     "write_grdecl",
     "write_raster",
     "write_vector",

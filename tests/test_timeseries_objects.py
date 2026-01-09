@@ -1,4 +1,7 @@
-"""Tests for time series objects compatible with TimeSmith."""
+"""Tests for time series objects using TimeSmith typing.
+
+These objects are imported from timesmith.typing (single source of truth).
+"""
 
 import pandas as pd
 import pytest
@@ -36,13 +39,12 @@ class TestSeriesLike:
         with pytest.raises(ValueError, match="Index must be DatetimeIndex"):
             SeriesLike(data=data)
 
-    def test_to_timesmith_no_dependency(self):
-        """Test to_timesmith when TimeSmith not available."""
+    def test_validator_works(self):
+        """Test that TimeSmith validators work."""
         data = pd.Series([1, 2, 3], index=pd.date_range("2020-01-01", periods=3))
         series = SeriesLike(data=data)
-        result = series.to_timesmith()
-        # Should return self when TimeSmith not available
-        assert result is series
+        # Validator should work (no exception)
+        assert_series_like(series)
 
 
 class TestPanelLike:

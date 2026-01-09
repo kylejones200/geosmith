@@ -1,20 +1,29 @@
-"""Example: GeoSmith and TimeSmith compatibility.
+"""Example: GeoSmith and TimeSmith integration.
 
-This example demonstrates how GeoSmith's time series objects are compatible
-with TimeSmith's typing layer, allowing seamless integration without conversion.
+This example demonstrates GeoSmith's integration with TimeSmith's typing layer.
+TimeSmith is a required dependency for time series functionality.
 
-TimeSmith is NOT a hard dependency - GeoSmith works independently.
+All time series types (SeriesLike, PanelLike, TableLike) are imported from
+timesmith.typing (single source of truth) for ecosystem compatibility.
 """
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
-from geosmith import SeriesLike, PanelLike, TableLike
+# Import from timesmith.typing (single source of truth)
+from timesmith.typing import PanelLike, SeriesLike, TableLike
+from timesmith.typing.validators import (
+    assert_panel_like,
+    assert_series_like,
+    assert_table_like,
+)
+
+from geosmith import PointSet
 
 # Set random seed for reproducibility
 np.random.seed(42)
 
-print("GeoSmith and TimeSmith Compatibility Example")
+print("GeoSmith and TimeSmith Integration Example")
 print("=" * 60)
 
 # Create a time series
@@ -22,18 +31,11 @@ dates = pd.date_range("2020-01-01", periods=100, freq="D")
 values = np.random.randn(100).cumsum() + 100
 series_data = pd.Series(values, index=dates, name="temperature")
 
-# Create GeoSmith SeriesLike
-gs_series = SeriesLike(data=series_data, name="temperature")
-print(f"\n1. Created GeoSmith SeriesLike: {gs_series}")
-
-# Try to convert to TimeSmith (if available)
-try:
-    ts_series = gs_series.to_timesmith()
-    print(f"   ✓ Converted to TimeSmith SeriesLike (TimeSmith is available)")
-    print(f"   Type: {type(ts_series)}")
-except ImportError:
-    print(f"   ℹ TimeSmith not available - using GeoSmith SeriesLike")
-    print(f"   Install with: pip install geosmith[timesmith]")
+# Create SeriesLike (pandas Series conforms to SeriesLike Protocol)
+series_like: SeriesLike = series_data
+assert_series_like(series_like)
+print(f"\n1. Created SeriesLike (pandas Series conforms to Protocol): {series_like}")
+print(f"   ✓ Validated using timesmith.typing.validators.assert_series_like")
 
 # Create panel data
 panel_data = pd.DataFrame(
@@ -44,16 +46,10 @@ panel_data = pd.DataFrame(
     index=pd.date_range("2020-01-01", periods=9, freq="D"),
 )
 
-gs_panel = PanelLike(data=panel_data, entity_col="entity")
-print(f"\n2. Created GeoSmith PanelLike: {gs_panel}")
-
-# Try to convert to TimeSmith (if available)
-try:
-    ts_panel = gs_panel.to_timesmith()
-    print(f"   ✓ Converted to TimeSmith PanelLike (TimeSmith is available)")
-    print(f"   Type: {type(ts_panel)}")
-except ImportError:
-    print(f"   ℹ TimeSmith not available - using GeoSmith PanelLike")
+panel_like: PanelLike = panel_data
+assert_panel_like(panel_like)
+print(f"\n2. Created PanelLike (pandas DataFrame conforms to Protocol): {panel_like}")
+print(f"   ✓ Validated using timesmith.typing.validators.assert_panel_like")
 
 # Create table data
 table_data = pd.DataFrame(
@@ -65,21 +61,23 @@ table_data = pd.DataFrame(
     index=pd.date_range("2020-01-01", periods=50, freq="D"),
 )
 
-gs_table = TableLike(data=table_data)
-print(f"\n3. Created GeoSmith TableLike: {gs_table}")
+table_like: TableLike = table_data
+assert_table_like(table_like)
+print(f"\n3. Created TableLike (pandas DataFrame conforms to Protocol): {table_like}")
+print(f"   ✓ Validated using timesmith.typing.validators.assert_table_like")
 
-# Try to convert to TimeSmith (if available)
-try:
-    ts_table = gs_table.to_timesmith()
-    print(f"   ✓ Converted to TimeSmith TableLike (TimeSmith is available)")
-    print(f"   Type: {type(ts_table)}")
-except ImportError:
-    print(f"   ℹ TimeSmith not available - using GeoSmith TableLike")
+# Demonstrate GeoSmith spatial objects work independently
+print("\n4. GeoSmith spatial objects work independently...")
+coords = np.random.rand(10, 2) * 100
+points = PointSet(coordinates=coords)
+print(f"   ✓ PointSet created: {len(points.coordinates)} points")
 
 print("\n" + "=" * 60)
-print("Summary:")
-print("- GeoSmith objects work independently (no TimeSmith required)")
-print("- When TimeSmith is available, objects can be converted seamlessly")
-print("- No data conversion needed - same underlying pandas structures")
-print("- Install TimeSmith: pip install geosmith[timesmith]")
-
+print("Integration example completed!")
+print("=" * 60)
+print("\nKey points:")
+print("- SeriesLike, PanelLike, TableLike imported from timesmith.typing")
+print("- Validators from timesmith.typing.validators work correctly")
+print("- GeoSmith spatial objects work independently")
+print("- No circular imports, clean dependency graph")
+print("- timesmith is a required dependency (not optional)")

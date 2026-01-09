@@ -31,6 +31,9 @@ from geosmith.primitives.geomechanics import (
     calculate_overpressure,
     calculate_pressure_gradient,
     calculate_stress_ratio,
+    drucker_prager_failure,
+    hoek_brown_failure,
+    mohr_coulomb_failure,
     pressure_to_mud_weight,
 )
 from geosmith.primitives.interpolation import idw_interpolate, idw_to_raster
@@ -38,6 +41,9 @@ from geosmith.primitives.kriging import KrigingResult, OrdinaryKriging
 from geosmith.primitives.petrophysics import (
     ArchieParams,
     calculate_bulk_volume_water,
+    calculate_permeability_kozeny_carman,
+    calculate_permeability_porosity_only,
+    calculate_permeability_timur,
     calculate_water_saturation,
     pickett_isolines,
 )
@@ -65,8 +71,14 @@ __all__ = [
     "calculate_bulk_volume_water",
     "calculate_effective_stress",
     "calculate_overpressure",
+    "calculate_permeability_kozeny_carman",
+    "calculate_permeability_porosity_only",
+    "calculate_permeability_timur",
     "calculate_pressure_gradient",
     "calculate_stress_ratio",
+    "drucker_prager_failure",
+    "hoek_brown_failure",
+    "mohr_coulomb_failure",
     "calculate_water_saturation",
     "compute_exceedance_probability",
     "compute_experimental_variogram",
