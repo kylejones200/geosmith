@@ -12,7 +12,7 @@ from timesmith.typing import PanelLike, SeriesLike, TableLike
 from timesmith.typing.validators import (
     assert_panel_like,
     assert_series_like,
-    assert_table_like,
+    assert_table,
 )
 
 # Import GeoSmith objects (which re-export from timesmith.typing)
@@ -108,7 +108,7 @@ class TestTimeSmithIntegration:
         gs_table = GSTableLike(data=table_data)
 
         # TimeSmith validator should work
-        assert_table_like(gs_table)
+        assert_table(gs_table)
 
     def test_no_circular_imports(self):
         """Test that there are no circular imports."""
