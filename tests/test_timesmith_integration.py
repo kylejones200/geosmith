@@ -15,39 +15,33 @@ from timesmith.typing.validators import (
     assert_table,
 )
 
-# Import GeoSmith objects (which re-export from timesmith.typing)
-from geosmith.objects.timeseries import PanelLike as GSPanelLike
-from geosmith.objects.timeseries import SeriesLike as GSSeriesLike
-from geosmith.objects.timeseries import TableLike as GSTableLike
+# Note: SeriesLike, PanelLike, TableLike are Protocols, not classes
+# They're imported from timesmith.typing and used for type checking
 
 
 class TestTimeSmithIntegration:
     """Tests for TimeSmith typing integration."""
 
     def test_serieslike_is_same_type(self):
-        """Test that GeoSmith SeriesLike is same as TimeSmith SeriesLike."""
+        """Test that SeriesLike Protocol works with pandas Series."""
         dates = pd.date_range("2020-01-01", periods=10, freq="D")
         series = pd.Series(np.random.randn(10), index=dates)
 
-        ts_series = SeriesLike(data=series)
-        gs_series = GSSeriesLike(data=series)
-
-        # Should be same type (imported from timesmith.typing)
-        assert type(ts_series) == type(gs_series)
-        assert isinstance(gs_series, SeriesLike)
+        # SeriesLike is a Protocol - pandas Series should conform to it
+        assert_series_like(series)
+        # Both should be the same pandas Series type
+        assert isinstance(series, pd.Series)
 
     def test_serieslike_validator_works(self):
-        """Test that TimeSmith validators work with GeoSmith objects."""
+        """Test that TimeSmith validators work with pandas Series."""
         dates = pd.date_range("2020-01-01", periods=10, freq="D")
         series = pd.Series(np.random.randn(10), index=dates)
 
-        gs_series = GSSeriesLike(data=series)
-
-        # TimeSmith validator should work
-        assert_series_like(gs_series)
+        # TimeSmith validator should work directly on pandas Series
+        assert_series_like(series)
 
     def test_panellike_is_same_type(self):
-        """Test that GeoSmith PanelLike is same as TimeSmith PanelLike."""
+        """Test that PanelLike Protocol works with pandas DataFrame."""
         panel_data = pd.DataFrame(
             {
                 "entity": ["A", "A", "B", "B"],
@@ -56,15 +50,12 @@ class TestTimeSmithIntegration:
             index=pd.date_range("2020-01-01", periods=4, freq="D"),
         )
 
-        ts_panel = PanelLike(data=panel_data, entity_col="entity")
-        gs_panel = GSPanelLike(data=panel_data, entity_col="entity")
-
-        # Should be same type
-        assert type(ts_panel) == type(gs_panel)
-        assert isinstance(gs_panel, PanelLike)
+        # PanelLike is a Protocol - pandas DataFrame should conform to it
+        assert_panel_like(panel_data)
+        assert isinstance(panel_data, pd.DataFrame)
 
     def test_panellike_validator_works(self):
-        """Test that TimeSmith validators work with GeoSmith PanelLike."""
+        """Test that TimeSmith validators work with pandas DataFrame."""
         panel_data = pd.DataFrame(
             {
                 "entity": ["A", "A", "B", "B"],
@@ -73,13 +64,11 @@ class TestTimeSmithIntegration:
             index=pd.date_range("2020-01-01", periods=4, freq="D"),
         )
 
-        gs_panel = GSPanelLike(data=panel_data, entity_col="entity")
-
-        # TimeSmith validator should work
-        assert_panel_like(gs_panel)
+        # TimeSmith validator should work directly on pandas DataFrame
+        assert_panel_like(panel_data)
 
     def test_tablelike_is_same_type(self):
-        """Test that GeoSmith TableLike is same as TimeSmith TableLike."""
+        """Test that TableLike Protocol works with pandas DataFrame."""
         table_data = pd.DataFrame(
             {
                 "feature1": np.random.randn(10),
@@ -88,15 +77,12 @@ class TestTimeSmithIntegration:
             index=pd.date_range("2020-01-01", periods=10, freq="D"),
         )
 
-        ts_table = TableLike(data=table_data)
-        gs_table = GSTableLike(data=table_data)
-
-        # Should be same type
-        assert type(ts_table) == type(gs_table)
-        assert isinstance(gs_table, TableLike)
+        # TableLike is a Protocol - pandas DataFrame should conform to it
+        assert_table(table_data)
+        assert isinstance(table_data, pd.DataFrame)
 
     def test_tablelike_validator_works(self):
-        """Test that TimeSmith validators work with GeoSmith TableLike."""
+        """Test that TimeSmith validators work with pandas DataFrame."""
         table_data = pd.DataFrame(
             {
                 "feature1": np.random.randn(10),
@@ -105,10 +91,8 @@ class TestTimeSmithIntegration:
             index=pd.date_range("2020-01-01", periods=10, freq="D"),
         )
 
-        gs_table = GSTableLike(data=table_data)
-
-        # TimeSmith validator should work
-        assert_table(gs_table)
+        # TimeSmith validator should work directly on pandas DataFrame
+        assert_table(table_data)
 
     def test_no_circular_imports(self):
         """Test that there are no circular imports."""
