@@ -59,8 +59,7 @@ dev = [
 docs = [
   "sphinx>=7.0",
   "sphinx-rtd-theme>=2.0",
-  "sphinx-autodoc-typehints>=1.20",
-  "myst-parser>=2.0.0"
+  "sphinx-autodoc-typehints>=1.20"
 ]
 examples = [
   "jupyter>=1.0",
