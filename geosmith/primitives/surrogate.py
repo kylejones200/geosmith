@@ -525,17 +525,31 @@ class SurrogateModel(BaseSpatialModel):
             >>> print(f"R²: {metrics.r2_score:.4f}, MAE: {metrics.mae:.4f}")
         """
         # Prepare test data (vectorized)
+        # This gives us X_test (feature matrix) and y_true (target values)
+        # X_test already has the correct structure matching training (including param features if provided)
         X_test, y_true = self._prepare_training_data(test_inputs, test_outputs, input_params, None)
 
-        # Surrogate prediction
-        if isinstance(test_inputs, list):
-            query_points = test_inputs[-1]  # Assume last is query points
-        else:
-            query_points = test_inputs
+        # Use X_test directly for prediction (already prepared with correct structure)
+        # Scale features using the same scaler as training
+        X_test_scaled = self.feature_scaler.transform(X_test)
 
+        # Predict (vectorized by sklearn/xgboost)
         start_surrogate = time.time()
-        y_pred_surrogate = self.predict(query_points, input_params)
+        y_pred_scaled = self.model.predict(X_test_scaled)
         time_surrogate = time.time() - start_surrogate
+
+        # Inverse transform targets (maintain 2D for scaler, then flatten)
+        y_pred_2d = y_pred_scaled.reshape(-1, 1)
+        y_pred_surrogate = self.target_scaler.inverse_transform(y_pred_2d).ravel()
+
+        # Ensure predictions match y_true length (should already match if logic is correct)
+        if len(y_pred_surrogate) != len(y_true):
+            raise ValueError(
+                f"Prediction length ({len(y_pred_surrogate)}) doesn't match "
+                f"true output length ({len(y_true)}). "
+                f"Test inputs structure may not match training structure. "
+                f"Expected same concatenation logic as training."
+            )
 
         # Compute metrics (vectorized operations)
         errors = y_true - y_pred_surrogate
