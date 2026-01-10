@@ -143,6 +143,7 @@ def stress_polygon_limits(
     # SHmax_min = q * (Sv - Pp) + C + Pp (transition from strike-slip to reverse)
     # Note: rf_min equals ss_max at the transition point (they're equal by definition)
     # If Shmin is known: SHmax_max = q * (Shmin - Pp) + C + Pp
+    # However, reverse faulting requires Shmin > Sv. If Shmin < Sv, use Sv-based constraint instead.
     rf_min = q * sv_eff + cohesion + pp  # Equal to ss_max at transition
     if shmin is not None:
         shmin = np.asarray(shmin, dtype=float)
@@ -153,7 +154,12 @@ def stress_polygon_limits(
                 f"shmin ({len(shmin)}) must have same length as sv ({len(sv)})"
             )
         shmin_eff = shmin - pp
-        rf_max = q * shmin_eff + cohesion + pp
+        # For reverse faulting: SHmax > Shmin > Sv
+        # If shmin < sv, reverse faulting isn't physically possible with this constraint
+        # Use max(shmin, sv) to ensure rf_max >= rf_min (upper bound based on larger of shmin or sv)
+        shmin_constraint = np.maximum(shmin, sv)
+        shmin_constraint_eff = shmin_constraint - pp
+        rf_max = q * shmin_constraint_eff + cohesion + pp
     else:
         rf_max = None
 

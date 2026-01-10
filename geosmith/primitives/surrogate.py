@@ -271,12 +271,16 @@ class SurrogateModel(BaseSpatialModel):
 
         # Create and train model
         self.model = self._create_model()
-        self.model.fit(
-            X_train_scaled,
-            y_train_scaled,
-            eval_set=[(X_val_scaled, y_val_scaled)] if self.validation_split > 0 else None,
-            verbose=verbose,
-        )
+        
+        # XGBoost and LightGBM support eval_set, sklearn models don't
+        fit_kwargs = {}
+        if self.validation_split > 0:
+            if self.model_type in ("xgboost", "lightgbm"):
+                fit_kwargs["eval_set"] = [(X_val_scaled, y_val_scaled)]
+                fit_kwargs["verbose"] = verbose
+            # sklearn models (GradientBoosting, RandomForest) don't support eval_set
+        
+        self.model.fit(X_train_scaled, y_train_scaled, **fit_kwargs)
 
         # Compute validation metrics
         if self.validation_split > 0:
