@@ -842,7 +842,7 @@ def add_log_track(
 
 
 def add_facies_track(
-    ax: plt.Axes,
+    ax: "Axes",
     df: pd.DataFrame,
     depth_col: str,
     facies_col: str,
