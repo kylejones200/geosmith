@@ -155,11 +155,13 @@ def stress_polygon_limits(
             )
         shmin_eff = shmin - pp
         # For reverse faulting: SHmax > Shmin > Sv
-        # If shmin < sv, reverse faulting isn't physically possible with this constraint
-        # Use max(shmin, sv) to ensure rf_max >= rf_min (upper bound based on larger of shmin or sv)
-        shmin_constraint = np.maximum(shmin, sv)
-        shmin_constraint_eff = shmin_constraint - pp
-        rf_max = q * shmin_constraint_eff + cohesion + pp
+        # rf_max = q * (Shmin - Pp) + C + Pp (maximum SHmax for reverse faulting given shmin)
+        # However, reverse faulting requires Shmin > Sv. If shmin < sv, use shmin = sv + epsilon
+        # to ensure rf_max > rf_min (reverse faulting lower bound)
+        # This represents the upper bound for reverse faulting when shmin constraint is less than sv
+        shmin_for_reverse = np.maximum(shmin, sv + 1e-6)  # Add small epsilon to ensure rf_max > rf_min
+        shmin_for_reverse_eff = shmin_for_reverse - pp
+        rf_max = q * shmin_for_reverse_eff + cohesion + pp
     else:
         rf_max = None
 
