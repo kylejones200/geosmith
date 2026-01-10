@@ -199,6 +199,10 @@ def estimate_shmin_from_poisson(
     """
     sv = np.asarray(sv, dtype=float)
     pp = np.asarray(pp, dtype=float)
+    
+    # Ensure arrays are 1D (handle scalar inputs)
+    sv = np.atleast_1d(sv)
+    pp = np.atleast_1d(pp)
 
     if len(sv) == 0 or len(pp) == 0:
         raise ValueError("Stress and pressure arrays must not be empty")

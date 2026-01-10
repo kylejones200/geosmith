@@ -122,6 +122,8 @@ def _predict_griffith_fracture(
     # Griffith theory: fractures form when tensile stress exceeds strength
     # Typically forms perpendicular to minimum principal stress
     fracture_strike = (shmin_azimuth + 90.0) % 360.0
+    # Ensure arrays are 1D (handle scalar inputs)
+    fracture_strike = np.atleast_1d(fracture_strike)
     fracture_dip = np.full_like(fracture_strike, 90.0)  # Vertical fractures
     fracture_type = np.full(len(fracture_strike), "tensile", dtype=object)
 
@@ -140,6 +142,8 @@ def _predict_tensile_fracture(
     """Predict fracture orientation for tensile failure."""
     # Tensile fractures form perpendicular to minimum stress
     fracture_strike = (shmin_azimuth + 90.0) % 360.0
+    # Ensure arrays are 1D (handle scalar inputs)
+    fracture_strike = np.atleast_1d(fracture_strike)
     fracture_dip = np.full_like(fracture_strike, 90.0)
     fracture_type = np.full(len(fracture_strike), "tensile", dtype=object)
 

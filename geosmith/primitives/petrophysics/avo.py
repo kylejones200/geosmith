@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Optional, Union
 import numpy as np
 
 from geosmith.primitives.petrophysics._common import logger, njit
+from geosmith.primitives.petrophysics.rock_physics import calculate_velocities_from_slowness
 
 def preprocess_avo_inputs(
     vp: Union[np.ndarray, float],
