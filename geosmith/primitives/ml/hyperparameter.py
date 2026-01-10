@@ -35,6 +35,32 @@ except ImportError:
     KernelExplainer = None  # type: ignore
 
 try:
+    import optuna
+    from optuna.samplers import TPESampler, RandomSampler
+    from optuna.pruners import MedianPruner, SuccessiveHalvingPruner
+    OPTUNA_AVAILABLE = True
+except ImportError:
+    OPTUNA_AVAILABLE = False
+    optuna = None  # type: ignore
+    TPESampler = None  # type: ignore
+    RandomSampler = None  # type: ignore
+    MedianPruner = None  # type: ignore
+    SuccessiveHalvingPruner = None  # type: ignore
+
+try:
+    from sklearn.model_selection import (
+        StratifiedKFold,
+        KFold,
+        cross_val_score
+    )
+    SKLEARN_CV_AVAILABLE = True
+except ImportError:
+    SKLEARN_CV_AVAILABLE = False
+    StratifiedKFold = None  # type: ignore
+    KFold = None  # type: ignore
+    cross_val_score = None  # type: ignore
+
+try:
     from numba import njit
     NUMBA_AVAILABLE = True
 except ImportError:
@@ -215,6 +241,12 @@ class SubsurfaceHyperparameterOptimizer:
         if model_type is None:
             model_type = self._detect_model_type(model_class)
         
+        if not SKLEARN_CV_AVAILABLE:
+            raise ImportError(
+                "scikit-learn is required for hyperparameter optimization. "
+                "Install with: pip install scikit-learn"
+            )
+        
         if scoring is None:
             scoring = 'accuracy' if self.task_type == 'classification' else 'r2'
         
@@ -299,27 +331,6 @@ class SubsurfaceHyperparameterOptimizer:
         except ImportError:
             logger.warning("Optuna visualization requires plotly. Install with: pip install plotly")
             return None
-
-
-        def objective(trial):
-            params = self._suggest_params(trial, model_type)
-            params.update(fixed_params)
-            
-            model = model_class(**params)
-            
-            if self.task_type == 'classification':
-                cv_splitter = StratifiedKFold(n_splits=cv, shuffle=True, random_state=self.random_state)
-            else:
-                cv_splitter = KFold(n_splits=cv, shuffle=True, random_state=self.random_state)
-            
-            scores = cross_val_score(
-                model, X, y,
-                cv=cv_splitter,
-                scoring=scoring,
-                n_jobs=-1
-            )
-            
-            return scores.mean()
 
 
 def optimize_facies_classifier(

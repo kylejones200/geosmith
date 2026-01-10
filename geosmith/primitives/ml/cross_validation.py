@@ -118,7 +118,8 @@ class WellBasedKFold(BaseCrossValidator):
                 f"X must be a DataFrame with '{self.well_col}' column"
             )
         
-        df = X.copy()
+        # Avoid unnecessary copy - DataFrame operations are generally safe
+        df = X
         
         if self.well_col not in df.columns:
             raise ValueError(

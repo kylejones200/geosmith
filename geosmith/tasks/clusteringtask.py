@@ -228,8 +228,15 @@ class FaciesClusterer(BaseEstimator):
             X_scaled = X_array
 
         if self.method == "dbscan":
+            # DBSCAN doesn't have predict method, need to use fit_predict
+            # but this retrains - better to warn user or use clustering from fit
+            logger.warning(
+                "DBSCAN predict() calls fit_predict which retrains the model. "
+                "Consider using cluster_labels_ from fit() for training data."
+            )
             return self.model.fit_predict(X_scaled)
         else:
+            # KMeans and AgglomerativeClustering have predict method
             return self.model.predict(X_scaled)
 
     def fit_predict(self, X: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
@@ -281,11 +288,11 @@ def cluster_facies(
         >>> labels = cluster_facies(df, ['GR', 'RHOB', 'NPHI'], method='kmeans', n_clusters=3)
         >>> print(f"Cluster labels: {labels.values}")
     """
-    # Extract DataFrame if GeoTable
+    # Extract DataFrame if GeoTable (avoid unnecessary copy)
     if isinstance(df, GeoTable):
-        df_data = df.data.copy()
+        df_data = df.data
     else:
-        df_data = df.copy()
+        df_data = df
 
     clusterer = FaciesClusterer(
         method=method,

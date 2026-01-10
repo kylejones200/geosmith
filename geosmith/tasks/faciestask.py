@@ -127,14 +127,15 @@ class FaciesTask:
                 "Install with: pip install scikit-learn"
             )
 
-        # Extract DataFrame if GeoTable
+        # Extract DataFrame if GeoTable (avoid unnecessary copy if already DataFrame)
         if isinstance(data, GeoTable):
-            df = data.data.copy()
+            df = data.data
         else:
-            df = data.copy()
+            df = data
 
-        X = df[feature_cols].copy()
-        y = df[target_col].astype(str).copy()
+        # Use views where possible, only copy when necessary for safety
+        X = df[feature_cols]
+        y = df[target_col].astype(str)
 
         # Create model pipeline
         if model_type.upper() == "SVM":
@@ -183,11 +184,16 @@ class FaciesTask:
             yhat_te = pipe.predict(Xte)
             report = classification_report(yte, yhat_te)
             logger.info(f"Trained {model_name} with test_size={test_size}")
+            
+            # For final predictions, refit on full dataset to avoid using model
+            # trained only on subset (prevents confusion about predictions on test data)
+            pipe.fit(X, y)
+            logger.info(f"Refitted {model_name} on full dataset for predictions")
         else:
             pipe.fit(X, y)
             logger.info(f"Trained {model_name} on full dataset")
 
-        # Predict on full dataset
+        # Predict on full dataset (now using model trained on full data)
         y_pred = pd.Series(pipe.predict(X), index=df.index, name="predicted")
 
         # Get probabilities

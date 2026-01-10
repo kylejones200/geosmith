@@ -242,11 +242,10 @@ def build_block_model_features(
         else:
             nn_dist_grid = distances_grid[:, -1]
 
-        # Normalize using sample statistics
+        # Normalize using sample statistics (avoid redundant KDTree construction)
         if nn_dist_grid.std() > 1e-9:
-            # Estimate mean/std from sample density
-            tree_samples = KDTree(sample_coords)
-            dists_samples, _ = tree_samples.query(sample_coords, k=k_actual)
+            # Estimate mean/std from sample density using same tree
+            dists_samples, _ = tree.query(sample_coords, k=k_actual)
             if dists_samples.ndim == 2:
                 nn_samples = dists_samples[:, -1]
                 if nn_samples.std() > 1e-9:
