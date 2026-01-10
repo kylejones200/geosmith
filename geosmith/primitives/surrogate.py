@@ -338,6 +338,13 @@ class SurrogateModel(BaseSpatialModel):
         Raises:
             ValueError: If input and output lengths don't match.
         """
+        # Handle outputs first to determine concatenation method
+        # Vectorized with list comprehension
+        if isinstance(training_outputs, list):
+            y = np.hstack([np.asarray(out, dtype=np.float64).ravel() for out in training_outputs])
+        else:
+            y = np.asarray(training_outputs, dtype=np.float64).ravel()
+        
         # Handle multiple inputs (e.g., samples + query_points for SGS)
         # Vectorized: use list comprehension
         if isinstance(training_inputs, list):
@@ -351,9 +358,22 @@ class SurrogateModel(BaseSpatialModel):
             else:
                 # Check if all inputs have the same number of rows
                 lengths = [len(coord) for coord in coords_list]
+                total_length = sum(lengths)
+                
                 if len(set(lengths)) == 1:
-                    # Same length: concatenate horizontally as additional features
-                    X = np.hstack(coords_list)
+                    # Same length: infer concatenation from output length
+                    # If output length matches sum of input lengths, vstack (locations concatenated)
+                    # Otherwise, hstack (features concatenated)
+                    if len(y) == total_length:
+                        # Output length matches sum: vstack (locations concatenated)
+                        X = np.vstack(coords_list)
+                    elif len(y) == lengths[0]:
+                        # Output length matches single input: hstack (features concatenated)
+                        X = np.hstack(coords_list)
+                    else:
+                        # Default to vstack if output length doesn't match either
+                        # This handles cases where simulation might concatenate inputs
+                        X = np.vstack(coords_list)
                 else:
                     # Different lengths: concatenate vertically (they represent different locations)
                     # This matches the case where outputs are also concatenated vertically
@@ -362,12 +382,6 @@ class SurrogateModel(BaseSpatialModel):
             X = training_inputs.coordinates.copy()
         else:
             X = np.asarray(training_inputs, dtype=np.float64)
-
-        # Handle outputs - vectorized with list comprehension
-        if isinstance(training_outputs, list):
-            y = np.hstack([np.asarray(out, dtype=np.float64).ravel() for out in training_outputs])
-        else:
-            y = np.asarray(training_outputs, dtype=np.float64).ravel()
 
         # Add input parameters as features (if provided)
         # Vectorized: use np.full for efficient repetition
