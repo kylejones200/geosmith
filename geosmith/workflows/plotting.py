@@ -6,10 +6,14 @@ Migrated from geosuite.petro.buckles, geosuite.petro.pickett, geosuite.petro.lit
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +27,7 @@ try:
     MATPLOTLIB_AVAILABLE = True
 except ImportError:
     MATPLOTLIB_AVAILABLE = False
+    plt = None  # type: ignore
     Figure = None  # type: ignore
     Axes = None  # type: ignore
     mpatches = None  # type: ignore
@@ -780,7 +785,7 @@ def create_strip_chart(
 
 
 def add_log_track(
-    ax: plt.Axes,
+    ax: "Axes",
     df: pd.DataFrame,
     depth_col: str,
     log_col: str,
