@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Optional, Union
 import numpy as np
 
 from geosmith.primitives.petrophysics._common import logger, njit
+from geosmith.primitives.petrophysics.water_saturation import ArchieParams
 
 @njit(cache=True)
 def _pickett_isolines_kernel(
