@@ -19,7 +19,12 @@ from geosmith.primitives.geomechanics._common import (
 if TYPE_CHECKING:
     import pandas as pd
 
-from geosmith.primitives._numba_helpers import njit, prange, NUMBA_AVAILABLE as NUMBA_HELPER_AVAILABLE
+# Import prange for parallel execution (from numba if available)
+try:
+    from numba import prange
+except ImportError:
+    prange = range  # type: ignore
+
 from geosmith.primitives.geomechanics.pressure import sv_from_density
 
 
