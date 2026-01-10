@@ -45,12 +45,23 @@ anomsmith = [
 ]
 ml = [
   "scikit-learn>=1.3.0",
+  "xgboost>=2.0.0",
+]
+genai = [
+  "scikit-learn>=1.3.0",
+  "xgboost>=2.0.0",
+  "lightgbm>=4.0.0",
 ]
 seismic = [
   "segyio>=1.9.0",
 ]
 stratigraphy = [
   "ruptures>=1.1.0",
+]
+nlp = [
+  "spacy>=3.7.0",
+  "transformers>=4.35.0",
+  "torch>=2.1.0",
 ]
 dev = [
   "pytest>=7.0",
@@ -70,7 +81,7 @@ examples = [
   "ipykernel>=6.0"
 ]
 all = [
-  "geosmith[vector,raster,viz,primitives,ml,seismic,dev,docs,examples]"
+  "geosmith[vector,raster,viz,primitives,ml,seismic,nlp,stratigraphy,genai,dev,docs,examples]"
 ]
 
 [project.urls]

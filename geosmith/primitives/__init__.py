@@ -26,28 +26,66 @@ from geosmith.primitives.crs import (
     transform_coordinates,
     validate_coordinates,
 )
+# Geomechanics is now a modular package - import from package __init__
 from geosmith.primitives.geomechanics import (
+    # Stress
     calculate_effective_stress,
-    calculate_fracture_aperture,
-    calculate_fracture_permeability,
+    calculate_stress_ratio,
+    determine_stress_regime,
+    estimate_shmin_from_poisson,
+    friction_coefficient_ratio,
+    shmax_bounds,
+    stress_polygon_limits,
+    stress_polygon_points,
+    wellbore_stress_concentration,
+    # Pressure
     calculate_hydrostatic_pressure,
     calculate_overburden_stress,
     calculate_overpressure,
+    calculate_pore_pressure_bowers,
+    calculate_pore_pressure_eaton_sonic,
     calculate_pressure_gradient,
-    calculate_stress_ratio,
+    mud_weight_equivalent,
+    pore_pressure_eaton,
+    pressure_to_mud_weight,
+    sv_from_density,
+    # Private kernels (exported for internal use)
+    _calculate_overburden_stress_kernel,
+    _calculate_pressure_gradient_kernel,
+    # Failure
     drucker_prager_failure,
-    estimate_shmin_from_poisson,
-    fracture_orientation_distribution,
     hoek_brown_failure,
+    mohr_coulomb_failure,
+    # Fracture
+    calculate_fracture_aperture,
+    calculate_fracture_permeability,
+    fracture_orientation_distribution,
+    predict_fracture_orientation,
+    # Inversion
     invert_stress_combined,
     invert_stress_from_breakout,
     invert_stress_from_dif,
-    mohr_coulomb_failure,
-    predict_fracture_orientation,
-    pressure_to_mud_weight,
-    stress_polygon_limits,
+    # Parallel
+    calculate_overburden_stress_parallel,
+    get_parallel_info,
+    process_well_array_parallel,
+    # Wellbore (dataclasses and functions)
+    GeomechParams,
+    WellboreStabilityResult,
+    breakout_analysis,
+    drilling_margin_analysis,
+    safe_mud_weight_window,
+    wellbore_stress_plot_data,
+    # Field
+    FieldOptimizationResult,
+    calculate_field_statistics,
+    process_field_data,
 )
-from geosmith.primitives.interpolation import idw_interpolate, idw_to_raster
+from geosmith.primitives.interpolation import (
+    compute_idw_residuals,
+    idw_interpolate,
+    idw_to_raster,
+)
 
 # Optional kriging (requires scipy)
 try:
@@ -117,14 +155,56 @@ except ImportError:
 from geosmith.primitives.simulation import (
     compute_exceedance_probability,
     compute_simulation_statistics,
+    exp_transform,
+    log_transform,
     sequential_gaussian_simulation,
 )
+# Optional surrogate models (requires scikit-learn, xgboost)
+try:
+    from geosmith.primitives.surrogate import (
+        SurrogateModel,
+        SurrogateMetrics,
+        train_simulation_emulator,
+    )
+
+    SURROGATE_AVAILABLE = True
+except ImportError:
+    SURROGATE_AVAILABLE = False
+    SurrogateModel = None  # type: ignore
+    SurrogateMetrics = None  # type: ignore
+    train_simulation_emulator = None  # type: ignore
 from geosmith.primitives.variogram import (
     VariogramModel,
     compute_experimental_variogram,
     fit_variogram_model,
     predict_variogram,
 )
+# Optional production analysis (requires pandas - usually available)
+try:
+    from geosmith.primitives.production import (
+        aggregate_by_county,
+        aggregate_by_field,
+        aggregate_by_pool,
+        analyze_spatial_distribution,
+        analyze_temporal_coverage,
+        calculate_production_density,
+        calculate_production_summary,
+        calculate_well_statistics,
+        identify_production_hotspots,
+    )
+
+    PRODUCTION_AVAILABLE = True
+except ImportError:
+    PRODUCTION_AVAILABLE = False
+    aggregate_by_county = None  # type: ignore
+    aggregate_by_field = None  # type: ignore
+    aggregate_by_pool = None  # type: ignore
+    analyze_spatial_distribution = None  # type: ignore
+    analyze_temporal_coverage = None  # type: ignore
+    calculate_production_density = None  # type: ignore
+    calculate_production_summary = None  # type: ignore
+    calculate_well_statistics = None  # type: ignore
+    identify_production_hotspots = None  # type: ignore
 
 __all__ = [
     "ArchieParams",
@@ -165,17 +245,22 @@ __all__ = [
     "drucker_prager_failure",
     "estimate_shmin_from_poisson",
     "fracture_orientation_distribution",
+    "friction_coefficient_ratio",
     "gassmann_fluid_substitution",
     "hoek_brown_failure",
     "invert_stress_combined",
     "invert_stress_from_breakout",
     "invert_stress_from_dif",
     "mohr_coulomb_failure",
+    "mud_weight_equivalent",
     "compute_exceedance_probability",
     "compute_experimental_variogram",
     "compute_simulation_statistics",
+    "exp_transform",
     "fit_variogram_model",
+    "log_transform",
     "get_common_crs",
+    "compute_idw_residuals",
     "get_epsg_code",
     "grid_resample",
     "idw_interpolate",
@@ -185,21 +270,55 @@ __all__ = [
     "pickett_isolines",
     "point_in_polygon",
     "polygon_area",
+    "_calculate_overburden_stress_kernel",
+    "_calculate_pressure_gradient_kernel",
+    "calculate_overburden_stress_parallel",
+    "calculate_pore_pressure_bowers",
+    "calculate_pore_pressure_eaton_sonic",
+    "determine_stress_regime",
+    "get_parallel_info",
+    "pore_pressure_eaton",
     "preprocess_avo_inputs",
+    "process_well_array_parallel",
     "predict_fracture_orientation",
     "pressure_to_mud_weight",
     "predict_variogram",
     "sequential_gaussian_simulation",
+    "shmax_bounds",
     "apply_phase_shift",
     "compute_hilbert_attributes",
     "correct_trace_phase",
     "estimate_residual_phase",
     "standardize_crs",
     "stress_polygon_limits",
+    "stress_polygon_points",
+    "sv_from_density",
     "transform_coordinates",
     "validate_coordinates",
     "VariogramModel",
+    "wellbore_stress_concentration",
     "zonal_reduce",
+    # Wellbore stability (added from modular geomechanics)
+    "GeomechParams",
+    "WellboreStabilityResult",
+    "breakout_analysis",
+    "drilling_margin_analysis",
+    "safe_mud_weight_window",
+    "wellbore_stress_plot_data",
+    # Field analysis (added from modular geomechanics)
+    "FieldOptimizationResult",
+    "calculate_field_statistics",
+    "process_field_data",
+    # Production analysis (added conditionally)
+    "aggregate_by_county",
+    "aggregate_by_field",
+    "aggregate_by_pool",
+    "analyze_spatial_distribution",
+    "analyze_temporal_coverage",
+    "calculate_production_density",
+    "calculate_production_summary",
+    "calculate_well_statistics",
+    "identify_production_hotspots",
 ]
 
 # Conditionally add kriging exports if available
@@ -215,4 +334,13 @@ if FEATURES_AVAILABLE:
 if SEISMIC_AVAILABLE:
     # Already in __all__, but we can add them conditionally if needed
     pass
+
+# Conditionally add production exports if available
+if PRODUCTION_AVAILABLE:
+    # Already in __all__, but keep for clarity
+    pass
+
+# Conditionally add surrogate model exports if available
+if SURROGATE_AVAILABLE:
+    __all__.extend(["SurrogateModel", "SurrogateMetrics", "train_simulation_emulator"])
 

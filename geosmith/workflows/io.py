@@ -269,3 +269,45 @@ def write_raster(
     ) as dst:
         dst.write(data)
 
+
+
+def load_csv_from_string(
+    dash_upload_contents: str, encoding: Optional[str] = None
+) -> pd.DataFrame:
+    """Parse a Dash dcc.Upload contents string (data URL) assumed to be CSV.
+
+    Args:
+        dash_upload_contents: Base64-encoded CSV data URL string.
+        encoding: Optional text encoding (e.g., 'utf-8', 'latin-1').
+
+    Returns:
+        DataFrame with parsed CSV data.
+
+    Example:
+        >>> from geosmith.workflows.io import load_csv_from_string
+        >>>
+        >>> # Dash upload content (data URL)
+        >>> csv_data = "data:text/csv;base64,SGVhZGVyLFZhbHVlCjEsMi4zCjIsNC41"
+        >>> df = load_csv_from_string(csv_data)
+    """
+    import base64
+    import io
+
+    if not dash_upload_contents:
+        raise ValueError("No contents provided")
+
+    try:
+        header, b64data = dash_upload_contents.split(",", 1)
+    except ValueError:
+        raise ValueError(
+            "Invalid contents format; expected data URL with base64 payload"
+        )
+
+    raw = base64.b64decode(b64data)
+    buffer = io.BytesIO(raw)
+
+    if encoding:
+        return pd.read_csv(buffer, encoding=encoding)
+    # pandas will infer encoding
+    return pd.read_csv(buffer)
+

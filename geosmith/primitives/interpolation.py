@@ -174,3 +174,116 @@ def idw_to_raster(
         index=target_raster.index,
     )
 
+
+
+def compute_idw_residuals(
+    sample_points: PointSet,
+    sample_values: np.ndarray,
+    k: int = 16,
+    power: float = 2.0,
+    max_samples: Optional[int] = 1000,
+    leave_one_out: bool = True,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Compute IDW predictions and residuals using leave-one-out cross-validation.
+
+    This is useful for hybrid IDW+ML models where ML learns the residuals
+    between actual values and IDW predictions.
+
+    Args:
+        sample_points: PointSet with sample locations (n_samples, n_dims).
+        sample_values: Sample values (n_samples,).
+        k: Number of nearest neighbors for IDW, default 16.
+        power: IDW exponent, default 2.0.
+        max_samples: Maximum number of samples to process (for speed).
+                    If None, processes all samples, default 1000.
+        leave_one_out: If True, use true leave-one-out (slower but more accurate).
+                      If False, use full IDW (faster but biased), default True.
+
+    Returns:
+        Tuple of (idw_predictions, residuals):
+            - idw_predictions: IDW predictions at sample locations (n_samples,).
+            - residuals: Actual - Predicted (n_samples,).
+
+    Example:
+        >>> from geosmith import PointSet
+        >>> import numpy as np
+        >>>
+        >>> coords = np.random.rand(100, 3) * 100
+        >>> values = np.random.randn(100) * 2 + 10
+        >>> samples = PointSet(coordinates=coords)
+        >>>
+        >>> idw_pred, residuals = compute_idw_residuals(samples, values, k=16)
+        >>> print(f"Residual mean: {residuals.mean():.4f}, std: {residuals.std():.4f}")
+
+    Raises:
+        ImportError: If scikit-learn is not available.
+        ValueError: If inputs are invalid.
+    """
+    import logging
+
+    logger = logging.getLogger(__name__)
+
+    try:
+        from sklearn.neighbors import KDTree
+    except ImportError:
+        raise ImportError(
+            "scikit-learn is required for IDW residuals. "
+            "Install with: pip install scikit-learn"
+        )
+
+    coords = sample_points.coordinates
+    values = np.asarray(sample_values, dtype=np.float64)
+
+    n_samples = len(coords)
+
+    if max_samples and n_samples > max_samples:
+        logger.warning(
+            f"Processing {max_samples} of {n_samples} samples. "
+            "Set max_samples=None for full processing."
+        )
+        n_process = max_samples
+    else:
+        n_process = n_samples
+
+    idw_predictions = np.zeros(n_samples, dtype=np.float64)
+
+    if leave_one_out:
+        # True leave-one-out (more accurate but slower)
+        for i in range(n_process):
+            # Leave out sample i
+            coords_train = np.delete(coords, i, axis=0)
+            values_train = np.delete(values, i)
+
+            # Predict at sample i
+            query_coords = coords[i : i + 1]
+            query_points = PointSet(coordinates=query_coords)
+            train_points = PointSet(coordinates=coords_train)
+
+            idw_predictions[i] = idw_interpolate(
+                train_points, values_train, query_points, k=k, power=power
+            )[0]
+
+        # For remaining samples, use full IDW (small bias but fast)
+        if n_samples > n_process:
+            query_points_all = PointSet(coordinates=coords[n_process:])
+            idw_predictions[n_process:] = idw_interpolate(
+                sample_points, values, query_points_all, k=k, power=power
+            )
+    else:
+        # Use full IDW for all samples (faster but biased)
+        query_points_all = PointSet(coordinates=coords)
+        idw_predictions = idw_interpolate(
+            sample_points, values, query_points_all, k=k, power=power
+        )
+
+    # Compute residuals
+    residuals = values - idw_predictions
+
+    logger.info(
+        f"IDW residuals: mean={residuals.mean():.4f}, "
+        f"std={residuals.std():.4f}, "
+        f"range=[{residuals.min():.4f}, {residuals.max():.4f}]"
+    )
+
+    return idw_predictions, residuals
+

@@ -233,3 +233,56 @@ def compute_simulation_statistics(
         "max": np.max(realizations, axis=0),
     }
 
+
+
+def log_transform(values: np.ndarray, add_one: bool = True) -> np.ndarray:
+    """Log transform values (optionally adding 1 to avoid log(0)).
+
+    Useful for normalizing geostatistical data before simulation.
+
+    Args:
+        values: Values to transform.
+        add_one: If True, use log1p (log(1+x)); if False, use log(x), default True.
+
+    Returns:
+        Log-transformed values.
+
+    Example:
+        >>> from geosmith.primitives.simulation import log_transform
+        >>>
+        >>> log_grades = log_transform(grades, add_one=True)
+        >>> print(f"Transformed {len(grades)} values")
+    """
+    values = np.asarray(values, dtype=np.float64)
+
+    if add_one:
+        return np.log1p(values)
+    else:
+        return np.log(np.maximum(values, 1e-10))  # Avoid log(0)
+
+
+def exp_transform(log_values: np.ndarray, subtract_one: bool = True) -> np.ndarray:
+    """Exponential transform values back from log space.
+
+    Inverse of log_transform. Useful for back-transforming simulated values.
+
+    Args:
+        log_values: Log-transformed values.
+        subtract_one: If True, use expm1 (exp(x)-1); if False, use exp(x), default True.
+
+    Returns:
+        Original-scale values.
+
+    Example:
+        >>> from geosmith.primitives.simulation import exp_transform
+        >>>
+        >>> grades = exp_transform(log_grades, subtract_one=True)
+        >>> print(f"Back-transformed {len(grades)} values")
+    """
+    log_values = np.asarray(log_values, dtype=np.float64)
+
+    if subtract_one:
+        return np.expm1(log_values)
+    else:
+        return np.exp(log_values)
+
