@@ -335,13 +335,25 @@ class SurrogateModel(BaseSpatialModel):
             ValueError: If input and output lengths don't match.
         """
         # Handle multiple inputs (e.g., samples + query_points for SGS)
-        # Vectorized: use list comprehension and hstack for efficiency
+        # Vectorized: use list comprehension
         if isinstance(training_inputs, list):
             coords_list = [
                 inp.coordinates if isinstance(inp, PointSet) else np.asarray(inp)
                 for inp in training_inputs
             ]
-            X = np.hstack(coords_list) if coords_list else np.empty((0, 0))
+            
+            if not coords_list:
+                X = np.empty((0, 0))
+            else:
+                # Check if all inputs have the same number of rows
+                lengths = [len(coord) for coord in coords_list]
+                if len(set(lengths)) == 1:
+                    # Same length: concatenate horizontally as additional features
+                    X = np.hstack(coords_list)
+                else:
+                    # Different lengths: concatenate vertically (they represent different locations)
+                    # This matches the case where outputs are also concatenated vertically
+                    X = np.vstack(coords_list)
         elif isinstance(training_inputs, PointSet):
             X = training_inputs.coordinates.copy()
         else:

@@ -140,9 +140,10 @@ def stress_polygon_limits(
     ss_max = q * sv_eff + cohesion + pp
 
     # Reverse/Thrust faulting: SHmax > Shmin > Sv
-    # SHmax_min = q * (Sv - Pp) + C + Pp
+    # SHmax_min = q * (Sv - Pp) + C + Pp (transition from strike-slip to reverse)
+    # Note: rf_min equals ss_max at the transition point (they're equal by definition)
     # If Shmin is known: SHmax_max = q * (Shmin - Pp) + C + Pp
-    rf_min = q * sv_eff + cohesion + pp
+    rf_min = q * sv_eff + cohesion + pp  # Equal to ss_max at transition
     if shmin is not None:
         shmin = np.asarray(shmin, dtype=float)
         if shmin.ndim == 0:

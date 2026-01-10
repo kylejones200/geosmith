@@ -275,6 +275,8 @@ def calculate_hydrostatic_pressure(
         >>> print(f"Hydrostatic pressure at {depth[-1]}m: {ph[-1]:.1f} MPa")
     """
     depth = np.asarray(depth, dtype=np.float64)
+    # Ensure arrays are 1D (handle scalar inputs)
+    depth = np.atleast_1d(depth)
 
     if len(depth) == 0:
         raise ValueError("Depth array must not be empty")

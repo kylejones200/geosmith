@@ -40,7 +40,9 @@ class TestStressPolygonLimits:
         assert ss_max > ss_min
 
         # Reverse: SHmax > Shmin > Sv
-        assert rf_min > ss_max  # Should be above strike-slip
+        # Note: rf_min equals ss_max at the transition point (they represent the same boundary)
+        # Use >= to allow for the equality case, or check with small tolerance
+        assert rf_min >= ss_max  # Should be at or above strike-slip transition
         assert rf_max > rf_min
 
     def test_array_input(self):
@@ -116,6 +118,7 @@ class TestStressPolygonLimits:
         assert ss_max > sv
 
         # Reverse should allow highest SHmax
-        assert rf_min > ss_max
+        # Note: rf_min equals ss_max at the transition point (they represent the same boundary)
+        assert rf_min >= ss_max  # Should be at or above strike-slip transition
         assert rf_max > rf_min
 

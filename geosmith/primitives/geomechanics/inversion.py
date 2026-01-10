@@ -72,6 +72,13 @@ def invert_stress_from_breakout(
     depth = np.asarray(depth, dtype=float)
     sv = np.asarray(sv, dtype=float)
     pp = np.asarray(pp, dtype=float)
+    
+    # Ensure arrays are 1D (handle scalar inputs)
+    breakout_width = np.atleast_1d(breakout_width)
+    breakout_azimuth = np.atleast_1d(breakout_azimuth)
+    depth = np.atleast_1d(depth)
+    sv = np.atleast_1d(sv)
+    pp = np.atleast_1d(pp)
 
     if method == "optimization":
         return _invert_stress_optimization(
