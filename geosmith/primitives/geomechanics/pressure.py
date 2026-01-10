@@ -43,13 +43,14 @@ def calculate_overpressure(
     """
     return np.asarray(pp, dtype=float) - np.asarray(ph, dtype=float)
 
-@njit(cache=True)
+@njit(cache=True, fastmath=True)
 def _calculate_pressure_gradient_kernel(
     pressure: np.ndarray, depth: np.ndarray
 ) -> np.ndarray:
     """Numba-optimized kernel for pressure gradient calculation.
 
-    This function is JIT-compiled for 2-5x speedup.
+    This function is JIT-compiled for 2-5x speedup. Uses vectorized operations
+    where possible within Numba constraints.
 
     Args:
         pressure: Pressure array (MPa).
@@ -58,26 +59,25 @@ def _calculate_pressure_gradient_kernel(
     Returns:
         Pressure gradient (MPa/m).
     """
-    from geosmith.primitives._numba_helpers import njit
+    n = len(pressure)
+    gradient = np.zeros(n, dtype=np.float64)
 
-    @njit(cache=True)
-    def _kernel(p: np.ndarray, d: np.ndarray) -> np.ndarray:
-        n = len(p)
-        gradient = np.zeros(n, dtype=np.float64)
+    # Vectorized gradient calculation with Numba
+    for i in range(1, n):
+        dz = depth[i] - depth[i - 1]
+        if dz > 0.0:
+            gradient[i] = (pressure[i] - pressure[i - 1]) / dz
+        else:
+            # Handle zero or negative depth intervals
+            gradient[i] = gradient[i - 1] if i > 1 else 0.0
 
-        for i in range(1, n):
-            dz = d[i] - d[i - 1]
-            if dz > 0.0:
-                gradient[i] = (p[i] - p[i - 1]) / dz
-            else:
-                gradient[i] = gradient[i - 1] if i > 1 else 0.0
+    # Extrapolate first value (forward fill)
+    if n > 1:
+        gradient[0] = gradient[1]
+    else:
+        gradient[0] = 0.0
 
-        # Extrapolate first value
-        gradient[0] = gradient[1] if n > 1 else 0.0
-
-        return gradient
-
-    return _kernel(pressure, depth)
+    return gradient
 
 def calculate_pressure_gradient(
     pressure: Union[np.ndarray, float],
@@ -158,6 +158,7 @@ def pressure_to_mud_weight(
         return float(mw)
     return mw
 
+@njit(cache=True, fastmath=True)
 def _calculate_overburden_stress_kernel(
     depth: np.ndarray, rhob_kg: np.ndarray, g: float
 ) -> np.ndarray:
@@ -174,25 +175,22 @@ def _calculate_overburden_stress_kernel(
     Returns:
         Overburden stress (MPa).
     """
-    from geosmith.primitives._numba_helpers import njit
+    n = len(depth)
+    sv = np.zeros(n, dtype=np.float64)
 
-    @njit(cache=True)
-    def _kernel(d: np.ndarray, r: np.ndarray, grav: float) -> np.ndarray:
-        n = len(d)
-        sv = np.zeros(n, dtype=np.float64)
+    # Trapezoidal integration (vectorized with Numba)
+    for i in range(1, n):
+        dz = depth[i] - depth[i - 1]
+        if dz > 0.0:
+            # Average density for trapezoidal rule
+            avg_rho = (rhob_kg[i] + rhob_kg[i - 1]) * 0.5
+            # Integrate: d(Sv) = rho * g * dz, convert Pa to MPa
+            sv[i] = sv[i - 1] + avg_rho * g * dz * 1e-6
+        else:
+            # Handle zero or negative depth intervals (backward fill)
+            sv[i] = sv[i - 1] if i > 1 else 0.0
 
-        # Trapezoidal integration
-        for i in range(1, n):
-            dz = d[i] - d[i - 1]
-            if dz > 0.0:
-                avg_rho = (r[i] + r[i - 1]) * 0.5
-                sv[i] = sv[i - 1] + avg_rho * grav * dz * 1e-6  # Convert Pa to MPa
-            else:
-                sv[i] = sv[i - 1] if i > 1 else 0.0
-
-        return sv
-
-    return _kernel(depth, rhob_kg, g)
+    return sv
 
 def calculate_overburden_stress(
     depth: Union[np.ndarray, float],
