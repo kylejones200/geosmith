@@ -97,30 +97,40 @@ except ImportError:
     KrigingResult = None  # type: ignore
     OrdinaryKriging = None  # type: ignore
 
-from geosmith.primitives.petrophysics import (
-    ArchieParams,
-    calculate_avo_attributes,
-    calculate_avo_from_slowness,
-    calculate_bulk_volume_water,
-    calculate_density_from_velocity,
-    calculate_fluid_bulk_modulus,
-    calculate_formation_factor,
-    calculate_permeability_coates_dumanoir,
-    calculate_permeability_kozeny_carman,
-    calculate_permeability_porosity_only,
-    calculate_permeability_timur,
-    calculate_permeability_tixier,
-    calculate_permeability_wyllie_rose,
-    calculate_porosity_from_density,
-    calculate_velocities_from_slowness,
-    calculate_water_saturation,
-    calculate_water_saturation_indonesia,
-    calculate_water_saturation_simandoux,
-    calculate_water_saturation_waxman_smits,
-    gassmann_fluid_substitution,
-    pickett_isolines,
-    preprocess_avo_inputs,
-)
+# Petrophysics imports (required, not optional)
+try:
+    from geosmith.primitives.petrophysics import (
+        ArchieParams,
+        calculate_avo_attributes,
+        calculate_avo_from_slowness,
+        calculate_bulk_volume_water,
+        calculate_density_from_velocity,
+        calculate_fluid_bulk_modulus,
+        calculate_formation_factor,
+        calculate_permeability_coates_dumanoir,
+        calculate_permeability_kozeny_carman,
+        calculate_permeability_porosity_only,
+        calculate_permeability_timur,
+        calculate_permeability_tixier,
+        calculate_permeability_wyllie_rose,
+        calculate_porosity_from_density,
+        calculate_velocities_from_slowness,
+        calculate_water_saturation,
+        calculate_water_saturation_indonesia,
+        calculate_water_saturation_simandoux,
+        calculate_water_saturation_waxman_smits,
+        gassmann_fluid_substitution,
+        pickett_isolines,
+        preprocess_avo_inputs,
+    )
+except ImportError as e:
+    # If petrophysics fails to import, this is a critical error
+    # but we'll raise it with a clearer message
+    raise ImportError(
+        f"Failed to import petrophysics module. This is required. "
+        f"Original error: {e}. "
+        f"Check that geosmith.primitives.petrophysics.water_saturation can be imported."
+    ) from e
 from geosmith.primitives.raster import grid_resample, zonal_reduce
 
 # Optional seismic processing (requires scipy)
