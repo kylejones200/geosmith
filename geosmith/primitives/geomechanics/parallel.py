@@ -58,8 +58,6 @@ def calculate_overburden_stress_parallel(
         >>> sv_list = calculate_overburden_stress_parallel(depths, rhobs)
         >>> print(f"Processed {len(sv_list)} wells")
     """
-    from geosmith.primitives._numba_helpers import njit, prange, NUMBA_AVAILABLE
-
     if not PANDAS_AVAILABLE:
         raise ImportError(
             "pandas is required for calculate_overburden_stress_parallel. "
@@ -114,8 +112,6 @@ def process_well_array_parallel(
         >>> means = process_well_array_parallel(gr_data, 'mean')
         >>> print(f"Mean GR per well: {means.mean():.1f} ± {means.std():.1f} API")
     """
-    from geosmith.primitives._numba_helpers import njit, prange, NUMBA_AVAILABLE
-
     data_array = np.asarray(data_array, dtype=np.float64)
 
     if data_array.ndim != 2:
@@ -182,8 +178,6 @@ def get_parallel_info() -> dict[str, Union[bool, str, int]]:
             - 'num_threads': Number of threads (if available)
             - 'threading_layer': Threading layer type
     """
-    from geosmith.primitives._numba_helpers import NUMBA_AVAILABLE
-
     info: dict[str, Union[bool, str, int]] = {
         "numba_available": NUMBA_AVAILABLE,
         "parallel_enabled": NUMBA_AVAILABLE,
