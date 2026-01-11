@@ -430,7 +430,9 @@ class TestSurrogateModelAccuracy:
 
         # Test on new points
         test_query = PointSet(coordinates=np.random.rand(50, 2) * 100)
-        true_outputs = linear_simulation(samples, test_query)
+        # linear_simulation returns outputs for both samples and test_query (vstacked)
+        # but surrogate.predict only predicts on test_query, so we only need test_query outputs
+        true_outputs = linear_simulation(samples, test_query)[len(samples.coordinates):]  # Only test_query portion
         predicted_outputs = surrogate.predict(test_query)
 
         # Should be very accurate for linear function
