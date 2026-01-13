@@ -26,6 +26,7 @@ from geosmith.primitives.crs import (
     transform_coordinates,
     validate_coordinates,
 )
+
 # Geomechanics is now a modular package - import from package __init__
 from geosmith.primitives.geomechanics import (
     # Stress
@@ -169,6 +170,7 @@ from geosmith.primitives.simulation import (
     log_transform,
     sequential_gaussian_simulation,
 )
+
 # Optional surrogate models (requires scikit-learn, xgboost)
 try:
     from geosmith.primitives.surrogate import (
@@ -189,6 +191,7 @@ from geosmith.primitives.variogram import (
     fit_variogram_model,
     predict_variogram,
 )
+
 # Optional production analysis (requires pandas - usually available)
 try:
     from geosmith.primitives.production import (
@@ -353,4 +356,3 @@ if PRODUCTION_AVAILABLE:
 # Conditionally add surrogate model exports if available
 if SURROGATE_AVAILABLE:
     __all__.extend(["SurrogateModel", "SurrogateMetrics", "train_simulation_emulator"])
-

@@ -66,7 +66,8 @@ class FaciesClusterer(BaseEstimator):
 
         Args:
             method: Clustering method ('kmeans', 'dbscan', 'hierarchical').
-            n_clusters: Number of clusters (required for kmeans/hierarchical, ignored for dbscan).
+            n_clusters: Number of clusters (required for kmeans/hierarchical,
+                ignored for dbscan).
             scale_features: Whether to scale features before clustering, default True.
             random_state: Random seed for reproducibility, default 42.
             **kwargs: Additional parameters passed to clustering algorithm.
@@ -165,9 +166,7 @@ class FaciesClusterer(BaseEstimator):
             X_array = X.values
         else:
             X_array = np.asarray(X)
-            self.feature_names = [
-                f"feature_{i}" for i in range(X_array.shape[1])
-            ]
+            self.feature_names = [f"feature_{i}" for i in range(X_array.shape[1])]
 
         if len(X_array) == 0:
             raise ValueError("Input data must not be empty")
@@ -267,7 +266,8 @@ def cluster_facies(
     Args:
         df: DataFrame or GeoTable with well log data.
         feature_cols: List of column names to use as features.
-        method: Clustering method ('kmeans', 'dbscan', 'hierarchical'), default 'kmeans'.
+        method: Clustering method ('kmeans', 'dbscan', 'hierarchical'),
+            default 'kmeans'.
         n_clusters: Number of clusters (required for kmeans/hierarchical), optional.
         scale_features: Whether to scale features, default True.
         random_state: Random seed, default 42.
@@ -285,7 +285,9 @@ def cluster_facies(
         ...     'RHOB': [2.5, 2.3, 2.7, 2.4, 2.6],
         ...     'NPHI': [0.2, 0.15, 0.25, 0.18, 0.22]
         ... })
-        >>> labels = cluster_facies(df, ['GR', 'RHOB', 'NPHI'], method='kmeans', n_clusters=3)
+        >>> labels = cluster_facies(
+        ...     df, ['GR', 'RHOB', 'NPHI'], method='kmeans', n_clusters=3
+        ... )
         >>> print(f"Cluster labels: {labels.values}")
     """
     # Extract DataFrame if GeoTable (avoid unnecessary copy)
@@ -343,9 +345,7 @@ def find_optimal_clusters(
         )
 
     if method != "kmeans":
-        raise ValueError(
-            "Optimal cluster finding currently only supports kmeans"
-        )
+        raise ValueError("Optimal cluster finding currently only supports kmeans")
 
     if isinstance(X, pd.DataFrame):
         X_array = X.values
@@ -401,4 +401,3 @@ def _find_elbow(inertias: List[float], n_clusters: List[int]) -> int:
 
     elbow_idx = np.argmax(distances)
     return int(n_clusters_arr[elbow_idx])
-

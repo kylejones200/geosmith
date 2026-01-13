@@ -45,6 +45,7 @@ def calculate_effective_stress(
     """
     return np.asarray(sv, dtype=float) - biot * np.asarray(pp, dtype=float)
 
+
 def calculate_stress_ratio(
     shmin: Union[np.ndarray, float],
     sv: Union[np.ndarray, float],
@@ -74,6 +75,7 @@ def calculate_stress_ratio(
 
     return shmin / sv
 
+
 def stress_polygon_limits(
     sv: Union[np.ndarray, float],
     pp: Union[np.ndarray, float],
@@ -97,7 +99,8 @@ def stress_polygon_limits(
         Dictionary with stress limits for each faulting regime:
         - 'normal': (min, max) for normal faulting
         - 'strike_slip': (min, max) for strike-slip faulting
-        - 'reverse': (min, max) for reverse/thrust faulting (max may be None if shmin not provided).
+        - 'reverse': (min, max) for reverse/thrust faulting (max may be None
+            if shmin not provided).
 
     Example:
         >>> from geosmith.primitives.geomechanics import stress_polygon_limits
@@ -117,9 +120,7 @@ def stress_polygon_limits(
         pp = pp.reshape(1)
 
     if len(sv) != len(pp):
-        raise ValueError(
-            f"sv ({len(sv)}) and pp ({len(pp)}) must have same length"
-        )
+        raise ValueError(f"sv ({len(sv)}) and pp ({len(pp)}) must have same length")
 
     # Mohr-Coulomb failure criterion
     q = np.sqrt(mu**2 + 1) + mu
@@ -143,7 +144,8 @@ def stress_polygon_limits(
     # SHmax_min = q * (Sv - Pp) + C + Pp (transition from strike-slip to reverse)
     # Note: rf_min equals ss_max at the transition point (they're equal by definition)
     # If Shmin is known: SHmax_max = q * (Shmin - Pp) + C + Pp
-    # However, reverse faulting requires Shmin > Sv. If Shmin < Sv, use Sv-based constraint instead.
+    # However, reverse faulting requires Shmin > Sv. If Shmin < Sv, use
+    # Sv-based constraint instead.
     rf_min = q * sv_eff + cohesion + pp  # Equal to ss_max at transition
     if shmin is not None:
         shmin = np.asarray(shmin, dtype=float)
@@ -155,11 +157,16 @@ def stress_polygon_limits(
             )
         shmin_eff = shmin - pp
         # For reverse faulting: SHmax > Shmin > Sv
-        # rf_max = q * (Shmin - Pp) + C + Pp (maximum SHmax for reverse faulting given shmin)
-        # However, reverse faulting requires Shmin > Sv. If shmin < sv, use shmin = sv + epsilon
-        # to ensure rf_max > rf_min (reverse faulting lower bound)
-        # This represents the upper bound for reverse faulting when shmin constraint is less than sv
-        shmin_for_reverse = np.maximum(shmin, sv + 1e-6)  # Add small epsilon to ensure rf_max > rf_min
+        # rf_max = q * (Shmin - Pp) + C + Pp (maximum SHmax for reverse
+        # faulting given shmin)
+        # However, reverse faulting requires Shmin > Sv. If shmin < sv,
+        # use shmin = sv + epsilon to ensure rf_max > rf_min
+        # (reverse faulting lower bound)
+        # This represents the upper bound for reverse faulting when shmin
+        # constraint is less than sv
+        shmin_for_reverse = np.maximum(
+            shmin, sv + 1e-6
+        )  # Add small epsilon to ensure rf_max > rf_min
         shmin_for_reverse_eff = shmin_for_reverse - pp
         rf_max = q * shmin_for_reverse_eff + cohesion + pp
     else:
@@ -180,6 +187,7 @@ def stress_polygon_limits(
         "strike_slip": (ss_min, ss_max),
         "reverse": (rf_min, rf_max),
     }
+
 
 def estimate_shmin_from_poisson(
     sv: Union[np.ndarray, float],
@@ -208,7 +216,7 @@ def estimate_shmin_from_poisson(
     """
     sv = np.asarray(sv, dtype=float)
     pp = np.asarray(pp, dtype=float)
-    
+
     # Ensure arrays are 1D (handle scalar inputs)
     sv = np.atleast_1d(sv)
     pp = np.atleast_1d(pp)
@@ -228,6 +236,7 @@ def estimate_shmin_from_poisson(
 
     return shmin
 
+
 def friction_coefficient_ratio(mu: float) -> float:
     """Calculate the friction coefficient ratio for faulting calculations.
 
@@ -246,6 +255,7 @@ def friction_coefficient_ratio(mu: float) -> float:
         >>> print(f"Friction ratio: {f_mu:.3f}")
     """
     return ((mu**2 + 1) ** 0.5 + mu) ** 2
+
 
 def wellbore_stress_concentration(
     theta: Union[np.ndarray, float],
@@ -315,6 +325,7 @@ def wellbore_stress_concentration(
 
     return sigma_theta, sigma_r
 
+
 def stress_polygon_points(
     sv: float,
     pp: float,
@@ -357,6 +368,7 @@ def stress_polygon_points(
     ]
 
     return corners
+
 
 def shmax_bounds(
     sv: float,
@@ -408,6 +420,7 @@ def shmax_bounds(
         "shmax_tensile_fracture": shmax_tf,
         "friction_ratio": f_mu,
     }
+
 
 def determine_stress_regime(
     sv: Union[np.ndarray, float],
@@ -473,4 +486,3 @@ def determine_stress_regime(
             regimes[i] = "strike_slip"
 
     return regimes
-

@@ -75,4 +75,3 @@ class RasterGrid:
             f"RasterGrid(n_bands={n_bands}, shape=({n_rows}, {n_cols}), "
             f"has_nodata={has_nodata}, has_names={has_names}, has_index={has_index})"
         )
-

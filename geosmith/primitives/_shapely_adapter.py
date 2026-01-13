@@ -12,9 +12,7 @@ from geosmith.objects.pointset import PointSet
 from geosmith.objects.polygonset import PolygonSet
 
 
-def haversine_distance(
-    coords1: np.ndarray, coords2: np.ndarray
-) -> np.ndarray:
+def haversine_distance(coords1: np.ndarray, coords2: np.ndarray) -> np.ndarray:
     """Compute haversine distance using shapely if available."""
     try:
         from shapely.geometry import Point
@@ -31,9 +29,7 @@ def haversine_distance(
     raise NotImplementedError("Haversine distance not yet implemented")
 
 
-def point_in_polygon_shapely(
-    points: PointSet, polygons: PolygonSet
-) -> np.ndarray:
+def point_in_polygon_shapely(points: PointSet, polygons: PolygonSet) -> np.ndarray:
     """Check point in polygon using shapely if available."""
     try:
         from shapely.geometry import Point, Polygon
@@ -71,4 +67,3 @@ def point_in_polygon_shapely(
                 result[i, j] = poly.contains(point)
 
     return result
-

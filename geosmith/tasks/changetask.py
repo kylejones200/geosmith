@@ -18,4 +18,3 @@ class ChangeTask:
     def detect_change(self, *args, **kwargs):
         """Detect changes (placeholder)."""
         raise NotImplementedError("ChangeTask not yet implemented")
-

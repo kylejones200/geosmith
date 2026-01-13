@@ -47,8 +47,7 @@ def read_las(
     """
     if not LASIO_AVAILABLE:
         raise ImportError(
-            "lasio is required for LAS support. "
-            "Install with: pip install lasio"
+            "lasio is required for LAS support. " "Install with: pip install lasio"
         )
 
     las_path = Path(las_path)
@@ -134,4 +133,3 @@ def _process_las3_features(las, df: pd.DataFrame) -> pd.DataFrame:
         df.attrs["well_metadata"] = well_metadata
 
     return df
-

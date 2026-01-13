@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 # Optional scipy for optimization
 try:
     from scipy.optimize import minimize
+
     SCIPY_AVAILABLE = True
 except ImportError:
     SCIPY_AVAILABLE = False
@@ -72,7 +73,7 @@ def invert_stress_from_breakout(
     depth = np.asarray(depth, dtype=float)
     sv = np.asarray(sv, dtype=float)
     pp = np.asarray(pp, dtype=float)
-    
+
     # Ensure arrays are 1D (handle scalar inputs)
     breakout_width = np.atleast_1d(breakout_width)
     breakout_azimuth = np.atleast_1d(breakout_azimuth)
@@ -93,9 +94,8 @@ def invert_stress_from_breakout(
             wellbore_inclination,
         )
     else:
-        return _invert_stress_analytical(
-            breakout_width, depth, sv, pp, ucs, poisson
-        )
+        return _invert_stress_analytical(breakout_width, depth, sv, pp, ucs, poisson)
+
 
 def _invert_stress_optimization(
     breakout_width: np.ndarray,
@@ -171,9 +171,7 @@ def _invert_stress_optimization(
             shmax_est, shmin_est = initial_guess
 
         stress_ratio = (
-            (shmax_est - pp[i]) / (sv[i] - pp[i])
-            if (sv[i] - pp[i]) > 0
-            else 1.0
+            (shmax_est - pp[i]) / (sv[i] - pp[i]) if (sv[i] - pp[i]) > 0 else 1.0
         )
 
         results.append(
@@ -185,6 +183,7 @@ def _invert_stress_optimization(
         "shmin": np.array([r["shmin"] for r in results]),
         "stress_ratio": np.array([r["stress_ratio"] for r in results]),
     }
+
 
 def _invert_stress_analytical(
     breakout_width: np.ndarray,
@@ -218,6 +217,7 @@ def _invert_stress_analytical(
     stress_ratio = np.clip(stress_ratio, 0.5, 2.0)
 
     return {"shmax": shmax, "shmin": shmin, "stress_ratio": stress_ratio}
+
 
 def invert_stress_from_dif(
     dif_azimuth: Union[np.ndarray, float],
@@ -283,6 +283,7 @@ def invert_stress_from_dif(
         "stress_ratio": stress_ratio,
         "shmin_azimuth": (dif_azimuth + 90) % 360,
     }
+
 
 def invert_stress_combined(
     depth: Union[np.ndarray, float],
@@ -374,9 +375,7 @@ def invert_stress_combined(
         shmin = results_dif["shmin"]
         confidence = "low"
     else:
-        raise ValueError(
-            "At least one of breakout_data or dif_data must be provided"
-        )
+        raise ValueError("At least one of breakout_data or dif_data must be provided")
 
     sv_eff = sv - pp
     stress_ratio = (shmax - pp) / sv_eff
@@ -388,4 +387,3 @@ def invert_stress_combined(
         "stress_ratio": stress_ratio,
         "confidence": confidence,
     }
-

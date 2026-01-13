@@ -78,10 +78,13 @@ class SurrogateMetrics:
 
     def __repr__(self) -> str:
         """String representation."""
-        speedup_str = f", speedup={self.speedup_factor:.0f}x" if self.speedup_factor else ""
+        speedup_str = (
+            f", speedup={self.speedup_factor:.0f}x" if self.speedup_factor else ""
+        )
         return (
             f"SurrogateMetrics(r²={self.r2_score:.4f}, mae={self.mae:.4f}, "
-            f"rmse={self.rmse:.4f}, rel_err={self.mean_relative_error:.2%}{speedup_str})"
+            f"rmse={self.rmse:.4f}, "
+            f"rel_err={self.mean_relative_error:.2%}{speedup_str})"
         )
 
 
@@ -119,7 +122,8 @@ class SurrogateModel(BaseSpatialModel):
         """Initialize surrogate model.
 
         Args:
-            model_type: Model type ('xgboost', 'lightgbm', 'gradient_boosting', 'random_forest').
+            model_type: Model type ('xgboost', 'lightgbm', 'gradient_boosting',
+                'random_forest').
             n_estimators: Number of boosting rounds/trees.
             max_depth: Maximum tree depth.
             learning_rate: Learning rate for boosting.
@@ -186,15 +190,19 @@ class SurrogateModel(BaseSpatialModel):
         Args:
             simulation_func: Expensive simulation function to emulate.
                 Must accept training_inputs and return training_outputs.
-            training_inputs: Training input data (PointSet, array, or list of PointSets).
-                For SGS, this would be sample locations. If list, coordinates are concatenated.
+            training_inputs: Training input data (PointSet, array, or list of
+                PointSets). For SGS, this would be sample locations. If list,
+                coordinates are concatenated.
             training_outputs: Training output data (array or list of arrays).
-                For SGS, this would be simulation results. Must match length of training_inputs.
+                For SGS, this would be simulation results. Must match length of
+                training_inputs.
             input_params: Optional dictionary of fixed simulation parameters.
-                These are included as features in the surrogate model. Keys should be consistent
+                These are included as features in the surrogate model. Keys
+                should be consistent
                 across training and prediction.
             n_training_samples: Optional limit on training samples (for speed).
-                If None, uses all provided samples. If specified, randomly samples without replacement.
+                If None, uses all provided samples. If specified, randomly
+                samples without replacement.
             verbose: If True, log training progress and validation metrics.
 
         Returns:
@@ -209,13 +217,15 @@ class SurrogateModel(BaseSpatialModel):
             Validation metrics are stored in `self.metrics` if validation_split > 0.
 
         Example:
-            >>> from geosmith.primitives.simulation import sequential_gaussian_simulation
+            >>> from geosmith.primitives.simulation import (
+            ...     sequential_gaussian_simulation
+            ... )
             >>> from geosmith import PointSet
             >>>
             >>> # Generate training data from expensive simulation
             >>> samples = PointSet(coordinates=np.random.rand(100, 3) * 1000)
             >>> query_points = PointSet(coordinates=np.random.rand(1000, 3) * 1000)
-            >>> 
+            >>>
             >>> # Run expensive simulation (slow)
             >>> sim_results = sequential_gaussian_simulation(
             ...     samples, sample_values, query_points, variogram, n_realizations=1
@@ -242,7 +252,8 @@ class SurrogateModel(BaseSpatialModel):
 
         if verbose:
             logger.info(
-                f"Training surrogate model ({self.model_type}) on {len(X_train)} samples..."
+                f"Training surrogate model ({self.model_type}) "
+                f"on {len(X_train)} samples..."
             )
 
         # Split for validation
@@ -271,7 +282,7 @@ class SurrogateModel(BaseSpatialModel):
 
         # Create and train model
         self.model = self._create_model()
-        
+
         # XGBoost and LightGBM support eval_set, sklearn models don't
         fit_kwargs = {}
         if self.validation_split > 0:
@@ -279,7 +290,7 @@ class SurrogateModel(BaseSpatialModel):
                 fit_kwargs["eval_set"] = [(X_val_scaled, y_val_scaled)]
                 fit_kwargs["verbose"] = verbose
             # sklearn models (GradientBoosting, RandomForest) don't support eval_set
-        
+
         self.model.fit(X_train_scaled, y_train_scaled, **fit_kwargs)
 
         # Compute validation metrics
@@ -341,10 +352,12 @@ class SurrogateModel(BaseSpatialModel):
         # Handle outputs first to determine concatenation method
         # Vectorized with list comprehension
         if isinstance(training_outputs, list):
-            y = np.hstack([np.asarray(out, dtype=np.float64).ravel() for out in training_outputs])
+            y = np.hstack(
+                [np.asarray(out, dtype=np.float64).ravel() for out in training_outputs]
+            )
         else:
             y = np.asarray(training_outputs, dtype=np.float64).ravel()
-        
+
         # Handle multiple inputs (e.g., samples + query_points for SGS)
         # Vectorized: use list comprehension
         if isinstance(training_inputs, list):
@@ -352,31 +365,36 @@ class SurrogateModel(BaseSpatialModel):
                 inp.coordinates if isinstance(inp, PointSet) else np.asarray(inp)
                 for inp in training_inputs
             ]
-            
+
             if not coords_list:
                 X = np.empty((0, 0))
             else:
                 # Check if all inputs have the same number of rows
                 lengths = [len(coord) for coord in coords_list]
                 total_length = sum(lengths)
-                
+
                 if len(set(lengths)) == 1:
                     # Same length: infer concatenation from output length
-                    # If output length matches sum of input lengths, vstack (locations concatenated)
-                    # Otherwise, hstack (features concatenated)
+                    # If output length matches sum of input lengths, vstack
+                    # (locations concatenated). Otherwise, hstack
+                    # (features concatenated)
                     if len(y) == total_length:
                         # Output length matches sum: vstack (locations concatenated)
                         X = np.vstack(coords_list)
                     elif len(y) == lengths[0]:
-                        # Output length matches single input: hstack (features concatenated)
+                        # Output length matches single input: hstack
+                        # (features concatenated)
                         X = np.hstack(coords_list)
                     else:
                         # Default to vstack if output length doesn't match either
-                        # This handles cases where simulation might concatenate inputs
+                        # This handles cases where simulation might concatenate
+                        # inputs
                         X = np.vstack(coords_list)
                 else:
-                    # Different lengths: concatenate vertically (they represent different locations)
-                    # This matches the case where outputs are also concatenated vertically
+                    # Different lengths: concatenate vertically
+                    # (they represent different locations)
+                    # This matches the case where outputs are also
+                    # concatenated vertically
                     X = np.vstack(coords_list)
         elif isinstance(training_inputs, PointSet):
             X = training_inputs.coordinates.copy()
@@ -401,7 +419,8 @@ class SurrogateModel(BaseSpatialModel):
         # Validation: ensure lengths match
         if len(X) != len(y):
             raise ValueError(
-                f"Input and output lengths must match. Got {len(X)} inputs, {len(y)} outputs"
+                f"Input and output lengths must match. "
+                f"Got {len(X)} inputs, {len(y)} outputs"
             )
 
         return X, y
@@ -447,7 +466,9 @@ class SurrogateModel(BaseSpatialModel):
             )
 
     def predict(
-        self, query_points: Union[PointSet, np.ndarray], input_params: Optional[Dict[str, Any]] = None
+        self,
+        query_points: Union[PointSet, np.ndarray],
+        input_params: Optional[Dict[str, Any]] = None,
     ) -> np.ndarray:
         """Fast prediction using surrogate model.
 
@@ -465,13 +486,24 @@ class SurrogateModel(BaseSpatialModel):
         Example:
             >>> query_points = PointSet(coordinates=np.random.rand(1000, 3) * 1000)
             >>> predictions = surrogate.predict(query_points)
-            >>> print(f"Predicted {len(predictions)} values in {surrogate.prediction_time:.4f}s")
+            >>> print(
+            ...     f"Predicted {len(predictions)} values "
+            ...     f"in {surrogate.prediction_time:.4f}s"
+            ... )
         """
         if not self.is_fitted:
-            raise ValueError("Model must be fitted before prediction. Call fit() first.")
+            raise ValueError(
+                "Model must be fitted before prediction. Call fit() first."
+            )
 
-        if self.model is None or self.feature_scaler is None or self.target_scaler is None:
-            raise ValueError("Model components not initialized. Model may not be fitted correctly.")
+        if (
+            self.model is None
+            or self.feature_scaler is None
+            or self.target_scaler is None
+        ):
+            raise ValueError(
+                "Model components not initialized. Model may not be fitted correctly."
+            )
 
         start_time = time.time()
 
@@ -514,12 +546,17 @@ class SurrogateModel(BaseSpatialModel):
 
         Args:
             simulation_func: Original expensive simulation function.
-                Not currently used for speedup measurement (placeholder for future enhancement).
-            test_inputs: Test input data. Must match format used during training.
-            test_outputs: True simulation outputs for comparison. Must match length of test_inputs.
-            input_params: Optional simulation parameters. Must match those used during training.
+                Not currently used for speedup measurement
+                (placeholder for future enhancement).
+            test_inputs: Test input data. Must match format used during
+                training.
+            test_outputs: True simulation outputs for comparison. Must match
+                length of test_inputs.
+            input_params: Optional simulation parameters. Must match those used
+                during training.
             measure_speedup: If True, estimate speedup factor.
-                Currently returns a conservative estimate (100x). Full implementation would
+                Currently returns a conservative estimate (100x). Full
+                implementation would
                 require running the actual simulation function on a subset of test data.
 
         Returns:
@@ -540,8 +577,11 @@ class SurrogateModel(BaseSpatialModel):
         """
         # Prepare test data (vectorized)
         # This gives us X_test (feature matrix) and y_true (target values)
-        # X_test already has the correct structure matching training (including param features if provided)
-        X_test, y_true = self._prepare_training_data(test_inputs, test_outputs, input_params, None)
+        # X_test already has the correct structure matching training
+        # (including param features if provided)
+        X_test, y_true = self._prepare_training_data(
+            test_inputs, test_outputs, input_params, None
+        )
 
         # Use X_test directly for prediction (already prepared with correct structure)
         # Scale features using the same scaler as training
@@ -556,7 +596,8 @@ class SurrogateModel(BaseSpatialModel):
         y_pred_2d = y_pred_scaled.reshape(-1, 1)
         y_pred_surrogate = self.target_scaler.inverse_transform(y_pred_2d).ravel()
 
-        # Ensure predictions match y_true length (should already match if logic is correct)
+        # Ensure predictions match y_true length (should already match if
+        # logic is correct)
         if len(y_pred_surrogate) != len(y_true):
             raise ValueError(
                 f"Prediction length ({len(y_pred_surrogate)}) doesn't match "
@@ -568,12 +609,12 @@ class SurrogateModel(BaseSpatialModel):
         # Compute metrics (vectorized operations)
         errors = y_true - y_pred_surrogate
         abs_errors = np.abs(errors)
-        
+
         r2 = r2_score(y_true, y_pred_surrogate)
         mae = mean_absolute_error(y_true, y_pred_surrogate)
         rmse = np.sqrt(mean_squared_error(y_true, y_pred_surrogate))
         max_err = abs_errors.max()
-        
+
         # Mean relative error with epsilon to avoid division by zero
         eps = 1e-10
         relative_errors = abs_errors / (np.abs(y_true) + eps)
@@ -585,7 +626,8 @@ class SurrogateModel(BaseSpatialModel):
             # on a subset of test_inputs and comparing timing. For now, provide
             # a conservative estimate based on typical ML surrogate performance.
             logger.info(
-                "Speedup measurement is estimated. For actual speedup, run simulation_func "
+                "Speedup measurement is estimated. For actual speedup, "
+                "run simulation_func "
                 "on test subset and compare timing with surrogate.prediction_time"
             )
             # Conservative estimate: typical ML surrogates are 100-1000x faster
@@ -608,7 +650,8 @@ class SurrogateModel(BaseSpatialModel):
         metrics_str = f", r²={self.metrics.r2_score:.4f}" if self.metrics else ""
         return (
             f"SurrogateModel(model_type='{self.model_type}', {fitted_str}, "
-            f"n_estimators={self.n_estimators}, max_depth={self.max_depth}{metrics_str})"
+            f"n_estimators={self.n_estimators}, "
+            f"max_depth={self.max_depth}{metrics_str})"
         )
 
 
@@ -630,7 +673,8 @@ def train_simulation_emulator(
         simulation_func: Expensive simulation function to emulate.
         training_inputs: Training input data.
         training_outputs: Training output data (simulation results).
-        model_type: Model type ('xgboost', 'lightgbm', 'gradient_boosting', 'random_forest').
+        model_type: Model type ('xgboost', 'lightgbm', 'gradient_boosting',
+            'random_forest').
         input_params: Optional fixed simulation parameters.
         n_estimators: Number of boosting rounds.
         max_depth: Maximum tree depth.
@@ -669,4 +713,3 @@ def train_simulation_emulator(
     )
 
     return surrogate
-

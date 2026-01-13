@@ -42,6 +42,7 @@ class FieldOptimizationResult:
     success_probability: float
     recommendations: List[str]
 
+
 def process_field_data(df: "pd.DataFrame") -> Dict[str, "pd.DataFrame"]:
     """Process multi-well field data into separate well datasets.
 
@@ -55,7 +56,10 @@ def process_field_data(df: "pd.DataFrame") -> Dict[str, "pd.DataFrame"]:
         >>> from geosmith.primitives.geomechanics import process_field_data
         >>> import pandas as pd
         >>>
-        >>> df = pd.DataFrame({'well_name': ['Well1', 'Well1', 'Well2'], 'depth_m': [1000, 2000, 1500]})
+        >>> df = pd.DataFrame({
+        ...     'well_name': ['Well1', 'Well1', 'Well2'],
+        ...     'depth_m': [1000, 2000, 1500]
+        ... })
         >>> wells = process_field_data(df)
         >>> print(f"Processed {len(wells)} wells")
     """
@@ -71,6 +75,7 @@ def process_field_data(df: "pd.DataFrame") -> Dict[str, "pd.DataFrame"]:
         well_df = well_df.reset_index(drop=True)
         wells[well_name] = well_df
     return wells
+
 
 def calculate_field_statistics(
     field_data: "pd.DataFrame",
@@ -120,20 +125,22 @@ def calculate_field_statistics(
         )
 
     # Group by well for well-level statistics
-    well_stats = field_data.groupby("well_name").agg(
-        {
-            "mud_weight_used": ["mean", "std"],
-            "cost_per_meter": "first",
-            "days_to_drill": "first",
-            "drilling_status": lambda x: (x == "Success").mean(),
-            "depth_m": ["min", "max"],
-        }
-    ).round(3)
+    well_stats = (
+        field_data.groupby("well_name")
+        .agg(
+            {
+                "mud_weight_used": ["mean", "std"],
+                "cost_per_meter": "first",
+                "days_to_drill": "first",
+                "drilling_status": lambda x: (x == "Success").mean(),
+                "depth_m": ["min", "max"],
+            }
+        )
+        .round(3)
+    )
 
     # Flatten column names
-    well_stats.columns = [
-        "_".join(col).strip() for col in well_stats.columns.values
-    ]
+    well_stats.columns = ["_".join(col).strip() for col in well_stats.columns.values]
 
     # Overall field statistics
     total_wells = field_data["well_name"].nunique()
@@ -146,9 +153,7 @@ def calculate_field_statistics(
     avg_cost_per_meter = (
         field_data.groupby("well_name")["cost_per_meter"].first().mean()
     )
-    avg_drilling_days = (
-        field_data.groupby("well_name")["days_to_drill"].first().mean()
-    )
+    avg_drilling_days = field_data.groupby("well_name")["days_to_drill"].first().mean()
 
     # Problem analysis
     problems = field_data[field_data["drilling_status"] != "Success"]
@@ -180,4 +185,3 @@ def calculate_field_statistics(
         "problem_types": problem_types,
         "formation_performance": formation_performance,
     }
-

@@ -67,7 +67,9 @@ class DlisParser:
             >>> from geosmith.workflows.dlis import DlisParser
             >>>
             >>> parser = DlisParser()
-            >>> df = parser.load_channels('log.dlis', channel_names=['GR', 'RHOB', 'NPHI'])
+            >>> df = parser.load_channels(
+            ...     'log.dlis', channel_names=['GR', 'RHOB', 'NPHI']
+            ... )
             >>> print(f"Loaded {len(df)} samples with {len(df.columns)} channels")
         """
         dlis_path = Path(dlis_path)
@@ -229,4 +231,3 @@ def read_dlis_file(
     """
     parser = DlisParser()
     return parser.load_channels(dlis_path, channel_names=channel_names)
-

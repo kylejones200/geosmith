@@ -13,7 +13,10 @@ from typing import Optional
 import numpy as np
 
 from geosmith.objects.pointset import PointSet
-from geosmith.primitives.kriging import KrigingResult, OrdinaryKriging as GSOrdinaryKriging
+from geosmith.primitives.kriging import (
+    KrigingResult,
+    OrdinaryKriging as GSOrdinaryKriging,
+)
 from geosmith.primitives.variogram import (
     VariogramModel as GSVariogramModel,
     compute_experimental_variogram as gs_compute_variogram,
@@ -295,4 +298,3 @@ def load_spe9_data(filepath: str) -> dict:
     """
     warnings.warn(_DEPRECATION_WARNING, DeprecationWarning, stacklevel=2)
     return read_grdecl(filepath)
-

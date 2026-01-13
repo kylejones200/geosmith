@@ -64,9 +64,7 @@ def nearest_neighbor_search(
     return indices, dists
 
 
-def point_in_polygon(
-    points: PointSet, polygons: PolygonSet
-) -> np.ndarray:
+def point_in_polygon(points: PointSet, polygons: PolygonSet) -> np.ndarray:
     """Check which points are inside which polygons.
 
     Args:
@@ -85,9 +83,7 @@ def point_in_polygon(
     return point_in_polygon_shapely(points, polygons)
 
 
-def point_in_polygon_bbox(
-    points: PointSet, polygons: PolygonSet
-) -> np.ndarray:
+def point_in_polygon_bbox(points: PointSet, polygons: PolygonSet) -> np.ndarray:
     """Simple bounding box check (fallback when shapely not available).
 
     Args:
@@ -201,4 +197,3 @@ def bounding_box(
     maxx, maxy = combined.max(axis=0)
 
     return (float(minx), float(miny), float(maxx), float(maxy))
-

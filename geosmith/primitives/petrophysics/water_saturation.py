@@ -1,4 +1,5 @@
-"""Geosmith petrophysics: Water saturation calculations (Archie, Simandoux, Indonesia, Waxman-Smits)
+"""Geosmith petrophysics: Water saturation calculations
+(Archie, Simandoux, Indonesia, Waxman-Smits)
 
 Migrated from geosuite.petro.
 Layer 2: Primitives - Pure operations.
@@ -61,7 +62,9 @@ def calculate_water_saturation(
         Water saturation (fraction, 0-1).
 
     Example:
-        >>> from geosmith.primitives.petrophysics import calculate_water_saturation, ArchieParams
+        >>> from geosmith.primitives.petrophysics import (
+        ...     calculate_water_saturation, ArchieParams
+        ... )
         >>>
         >>> params = ArchieParams(a=1.0, m=2.0, n=2.0, rw=0.1)
         >>> sw = calculate_water_saturation(rt=10.0, phi=0.25, params=params)
@@ -131,7 +134,9 @@ def calculate_water_saturation_simandoux(
         Water saturation (fraction).
 
     Example:
-        >>> from geosmith.primitives.petrophysics import calculate_water_saturation_simandoux
+        >>> from geosmith.primitives.petrophysics import (
+        ...     calculate_water_saturation_simandoux
+        ... )
         >>>
         >>> sw = calculate_water_saturation_simandoux(
         ...     phi=0.25, rt=10.0, rsh=2.0, vsh=0.3, rw=0.05
@@ -149,7 +154,8 @@ def calculate_water_saturation_simandoux(
     if len(set(lengths)) > 1:
         raise ValueError(
             f"All input arrays must have the same length. "
-            f"Got lengths: phi={lengths[0]}, rt={lengths[1]}, rsh={lengths[2]}, vsh={lengths[3]}"
+            f"Got lengths: phi={lengths[0]}, rt={lengths[1]}, "
+            f"rsh={lengths[2]}, vsh={lengths[3]}"
         )
 
     if np.any(phi <= 0):
@@ -157,7 +163,9 @@ def calculate_water_saturation_simandoux(
     if np.any(rt <= 0):
         logger.warning("Found non-positive resistivity values, will result in NaN")
     if np.any(rsh <= 0):
-        logger.warning("Found non-positive shale resistivity values, will result in NaN")
+        logger.warning(
+            "Found non-positive shale resistivity values, will result in NaN"
+        )
     if np.any((vsh < 0) | (vsh > 1)):
         logger.warning("Found shale volume outside [0, 1], clipping to valid range")
         vsh = np.clip(vsh, 0, 1)
@@ -226,7 +234,9 @@ def calculate_water_saturation_indonesia(
         Water saturation (fraction).
 
     Example:
-        >>> from geosmith.primitives.petrophysics import calculate_water_saturation_indonesia
+        >>> from geosmith.primitives.petrophysics import (
+        ...     calculate_water_saturation_indonesia
+        ... )
         >>>
         >>> sw = calculate_water_saturation_indonesia(
         ...     phi=0.25, rt=10.0, rsh=2.0, vsh=0.3, rw=0.05
@@ -244,7 +254,8 @@ def calculate_water_saturation_indonesia(
     if len(set(lengths)) > 1:
         raise ValueError(
             f"All input arrays must have the same length. "
-            f"Got lengths: phi={lengths[0]}, rt={lengths[1]}, rsh={lengths[2]}, vsh={lengths[3]}"
+            f"Got lengths: phi={lengths[0]}, rt={lengths[1]}, "
+            f"rsh={lengths[2]}, vsh={lengths[3]}"
         )
 
     # Vectorized validation checks
@@ -265,7 +276,8 @@ def calculate_water_saturation_indonesia(
         f"Calculating water saturation using Indonesia equation for {len(phi)} samples"
     )
 
-    # Indonesia equation: Sw = [sqrt((a * Rw) / (phi^m * Rt)) + sqrt(Vsh * Rw / Rsh))]^(-2/n)
+    # Indonesia equation: Sw = [sqrt((a * Rw) / (phi^m * Rt)) +
+    # sqrt(Vsh * Rw / Rsh))]^(-2/n)
     with np.errstate(divide="ignore", invalid="ignore"):
         # Archie term
         archie_term = np.sqrt((a * rw) / ((phi**m) * rt))
@@ -320,14 +332,18 @@ def calculate_water_saturation_waxman_smits(
         m: Cementation exponent (default 2.0).
         n: Saturation exponent (default 2.0).
         a: Tortuosity factor (default 1.0).
-        b: Equivalent counterion conductance (mho/m per meq/ml). If None, calculated from temperature.
-        temperature: Formation temperature (°C, default 25.0) for B calculation if b is None.
+        b: Equivalent counterion conductance (mho/m per meq/ml).
+            If None, calculated from temperature.
+        temperature: Formation temperature (°C, default 25.0) for B calculation
+            if b is None.
 
     Returns:
         Water saturation (fraction).
 
     Example:
-        >>> from geosmith.primitives.petrophysics import calculate_water_saturation_waxman_smits
+        >>> from geosmith.primitives.petrophysics import (
+        ...     calculate_water_saturation_waxman_smits
+        ... )
         >>>
         >>> sw = calculate_water_saturation_waxman_smits(
         ...     phi=0.25, rt=10.0, cec=5.0, rw=0.05
@@ -359,7 +375,8 @@ def calculate_water_saturation_waxman_smits(
             logger.warning(f"Found {check_name}, may result in invalid values")
 
     logger.debug(
-        f"Calculating water saturation using Waxman-Smits equation for {len(phi)} samples"
+        f"Calculating water saturation using Waxman-Smits equation "
+        f"for {len(phi)} samples"
     )
 
     # Calculate B (equivalent counterion conductance) if not provided

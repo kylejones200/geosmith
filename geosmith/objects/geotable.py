@@ -44,7 +44,8 @@ class GeoTable:
         for idx, geom in enumerate(geom_col):
             if not isinstance(geom, (PointSet, LineSet, PolygonSet)):
                 raise ValueError(
-                    f"geometry at index {idx} must be PointSet, LineSet, or PolygonSet, "
+                    f"geometry at index {idx} must be PointSet, LineSet, "
+                    f"or PolygonSet, "
                     f"got {type(geom)}"
                 )
 
@@ -61,4 +62,3 @@ class GeoTable:
             f"GeoTable(n_rows={n_rows}, n_cols={n_cols}, "
             f"geometry_column='{self.geometry_column}', has_index={has_index})"
         )
-

@@ -18,4 +18,3 @@ class RouteTask:
     def route(self, *args, **kwargs):
         """Compute route (placeholder)."""
         raise NotImplementedError("RouteTask not yet implemented")
-

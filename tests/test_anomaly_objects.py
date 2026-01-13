@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from geosmith import PointSet, GeoIndex, AnomalyScores, SpatialAnomalyResult
+from geosmith import AnomalyScores, PointSet, SpatialAnomalyResult
 
 
 class TestAnomalyScores:
@@ -97,4 +97,5 @@ class TestSpatialAnomalyResult:
 
         with pytest.raises(ValueError, match="spatial_features length"):
             SpatialAnomalyResult(scores=scores, spatial_features=features)
+
 

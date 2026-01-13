@@ -129,4 +129,3 @@ def zonal_reduce(
             raise ValueError(f"Unknown reducer: {reducer}")
 
     return result
-

@@ -1,7 +1,6 @@
 """Tests for failure criteria primitives."""
 
 import numpy as np
-import pytest
 
 from geosmith.primitives.geomechanics import (
     drucker_prager_failure,

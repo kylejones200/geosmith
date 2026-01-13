@@ -5,9 +5,8 @@ Maintains 4-layer architecture and modularity constraints.
 """
 
 import ast
-from pathlib import Path
-from typing import Dict, List, Tuple
 from collections import defaultdict
+from pathlib import Path
 
 GEOSUITE_ROOT = Path("/Users/kylejonespatricia/geosuite")
 GEOSMITH_ROOT = Path(__file__).parent.parent
@@ -77,24 +76,24 @@ DOMAIN_MODULES = {
 }
 
 
-def scan_module(module_path: Path) -> Dict[str, List[Tuple[str, int]]]:
+def scan_module(module_path: Path) -> dict[str, list[tuple[str, int]]]:
     """Scan a Python module and extract all functions/classes.
-    
+
     Returns: Dict mapping file_name -> list of (name, line_count) tuples
     """
     functions = defaultdict(list)
-    
+
     if not module_path.exists():
         return functions
-    
+
     for py_file in module_path.rglob("*.py"):
         if "__pycache__" in str(py_file) or "test" in str(py_file).lower():
             continue
-        
+
         try:
             content = py_file.read_text()
             tree = ast.parse(content)
-            
+
             for node in ast.walk(tree):
                 if isinstance(node, ast.FunctionDef):
                     line_count = node.end_lineno - node.lineno if hasattr(node, 'end_lineno') else 50
@@ -104,41 +103,41 @@ def scan_module(module_path: Path) -> Dict[str, List[Tuple[str, int]]]:
                     functions[py_file.name].append((node.name, line_count))
         except SyntaxError:
             continue
-    
+
     return functions
 
 
-def analyze_geosuite() -> Dict[str, Dict]:
+def analyze_geosuite() -> dict[str, dict]:
     """Analyze geosuite structure and create migration plan."""
     geosuite_dir = GEOSUITE_ROOT / "geosuite"
-    
+
     if not geosuite_dir.exists():
         print(f"⚠ GeoSuite directory not found: {geosuite_dir}")
         return {}
-    
+
     analysis = {}
-    
+
     for domain, config in DOMAIN_MODULES.items():
         if config.get("status") == "migrated":
             continue
-        
+
         domain_path = geosuite_dir / domain
         if not domain_path.exists():
             continue
-        
+
         functions = scan_module(domain_path)
         total_functions = sum(len(funcs) for funcs in functions.values())
         total_files = len(functions)
-        
+
         # Calculate estimated lines
         total_lines = sum(sum(lines for _, lines in funcs) for funcs in functions.values())
-        
+
         # Check if target file exists and its size
         target_path = GEOSMITH_ROOT / config["target"]
         target_size = 0
         if target_path.exists() and target_path.is_file():
             target_size = len(target_path.read_text().splitlines())
-        
+
         analysis[domain] = {
             "source_path": str(domain_path),
             "target_path": config["target"],
@@ -151,11 +150,11 @@ def analyze_geosuite() -> Dict[str, Dict]:
             "split_modules": config.get("split_into", []),
             "functions": dict(functions),
         }
-    
+
     return analysis
 
 
-def generate_migration_plan(analysis: Dict[str, Dict]) -> str:
+def generate_migration_plan(analysis: dict[str, dict]) -> str:
     """Generate migration plan markdown."""
     plan = """# Smart Migration Plan
 
@@ -171,14 +170,14 @@ def generate_migration_plan(analysis: Dict[str, Dict]) -> str:
 ## Priority Order (Largest Impact, Fastest Wins)
 
 """
-    
+
     # Sort by priority: largest modules that need migration
     priority_order = sorted(
         analysis.items(),
         key=lambda x: (x[1]["total_functions"], -x[1].get("target_current_size", 0)),
         reverse=True
     )
-    
+
     for i, (domain, info) in enumerate(priority_order, 1):
         needs_splitting = "⚠️ **NEEDS REFACTORING**" if info["needs_splitting"] else "✅ OK"
         plan += f"""
@@ -191,10 +190,10 @@ def generate_migration_plan(analysis: Dict[str, Dict]) -> str:
 - **Max allowed**: {info['max_file_size']} lines
 - **Strategy**: {'Split into package structure' if info['needs_splitting'] else 'Batch migrate to single module'}
 """
-        
+
         if info["needs_splitting"]:
             plan += f"  - Split target into: {', '.join(info['split_modules'])}\n"
-        
+
         plan += f"""
 #### Migration Steps:
 1. Scan source files: `grep -r "^def\\|^class" {info['source_path']}`
@@ -203,7 +202,7 @@ def generate_migration_plan(analysis: Dict[str, Dict]) -> str:
 4. Single commit: "Migrate {domain} module from GeoSuite"
 5. Write batch tests (defer to end)
 """
-    
+
     plan += """
 ## Batch Migration Script Template
 
@@ -213,7 +212,7 @@ Use `scripts/refactor_geomechanics_ast.py` as template for automated extraction.
 
 Before migrating, check current file sizes:
 ```bash
-find geosmith/primitives -name "*.py" -exec wc -l {} \; | awk '$1 > 500 {print $1, $2}'
+find geosmith/primitives -name "*.py" -exec wc -l {} \\; | awk '$1 > 500 {print $1, $2}'
 ```
 
 ## Next Immediate Actions
@@ -225,7 +224,7 @@ find geosmith/primitives -name "*.py" -exec wc -l {} \; | awk '$1 > 500 {print $
 5. **Migrate geosuite.mining** (block models, variograms already done, add remaining)
 
 """
-    
+
     return plan
 
 
@@ -233,16 +232,16 @@ def main():
     """Main execution."""
     print("Analyzing GeoSuite structure...")
     analysis = analyze_geosuite()
-    
+
     print(f"\nFound {len(analysis)} domains to analyze")
-    
+
     plan = generate_migration_plan(analysis)
-    
+
     output_file = GEOSMITH_ROOT / "SMART_MIGRATION_PLAN.md"
     output_file.write_text(plan)
-    
+
     print(f"\n✅ Migration plan written to: {output_file}")
-    print(f"\nSummary:")
+    print("\nSummary:")
     for domain, info in sorted(analysis.items(), key=lambda x: x[1]["total_functions"], reverse=True):
         status = "⚠️ NEEDS REFACTORING" if info["needs_splitting"] else "✅ Ready"
         print(f"  {domain:20s}: {info['total_functions']:3d} functions, {status}")
@@ -250,4 +249,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 

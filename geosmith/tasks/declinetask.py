@@ -148,18 +148,12 @@ class DeclineModel(BaseEstimator, ABC):
         rate_arr = np.asarray(rate, dtype=float)
 
         # Remove invalid values
-        valid_mask = (
-            (rate_arr > 0)
-            & np.isfinite(rate_arr)
-            & np.isfinite(time_arr)
-        )
+        valid_mask = (rate_arr > 0) & np.isfinite(rate_arr) & np.isfinite(time_arr)
         time_arr = time_arr[valid_mask]
         rate_arr = rate_arr[valid_mask]
 
         if len(time_arr) < 3:
-            raise ValueError(
-                "Need at least 3 valid data points to fit decline model"
-            )
+            raise ValueError("Need at least 3 valid data points to fit decline model")
 
         # Normalize time to start at 0
         t0 = time_arr[0]
@@ -186,9 +180,7 @@ class DeclineModel(BaseEstimator, ABC):
             self.params = dict(zip(param_names, popt))
             self._fitted = True
 
-            logger.info(
-                f"Fitted {self.__class__.__name__} with params: {self.params}"
-            )
+            logger.info(f"Fitted {self.__class__.__name__} with params: {self.params}")
 
         except Exception as e:
             logger.error(f"Error fitting decline model: {e}")
@@ -205,7 +197,8 @@ class DeclineModel(BaseEstimator, ABC):
 
         Args:
             time: Time array for prediction.
-            return_cumulative: If True, also return cumulative production, default False.
+            return_cumulative: If True, also return cumulative production,
+                default False.
 
         Returns:
             Production rate array (and cumulative if requested).
@@ -245,7 +238,8 @@ class DeclineModel(BaseEstimator, ABC):
 
         Args:
             n_periods: Number of periods to forecast.
-            period_length: Length of each period (same units as training data), default 1.0.
+            period_length: Length of each period (same units as training data),
+                default 1.0.
             start_time: Optional start time for forecast (uses 0 if not specified).
 
         Returns:
@@ -287,9 +281,7 @@ class ExponentialDecline(DeclineModel):
         """Exponential decline rate function."""
         return qi * np.exp(-di * t)
 
-    def _cumulative_function(
-        self, t: np.ndarray, qi: float, di: float
-    ) -> np.ndarray:
+    def _cumulative_function(self, t: np.ndarray, qi: float, di: float) -> np.ndarray:
         """Exponential decline cumulative function."""
         return (qi / di) * (1 - np.exp(-di * t))
 
@@ -346,9 +338,7 @@ class HyperbolicDecline(DeclineModel):
             # Harmonic case
             return (qi / di) * np.log(1 + di * t)
         else:
-            return (qi / ((1 - b) * di)) * (
-                1 - np.power(1 + b * di * t, (b - 1) / b)
-            )
+            return (qi / ((1 - b) * di)) * (1 - np.power(1 + b * di * t, (b - 1) / b))
 
     def _estimate_initial_params(
         self, time: np.ndarray, rate: np.ndarray
@@ -382,9 +372,7 @@ class HarmonicDecline(DeclineModel):
         """Harmonic decline rate function."""
         return qi / (1 + di * t)
 
-    def _cumulative_function(
-        self, t: np.ndarray, qi: float, di: float
-    ) -> np.ndarray:
+    def _cumulative_function(self, t: np.ndarray, qi: float, di: float) -> np.ndarray:
         """Harmonic decline cumulative function."""
         return (qi / di) * np.log(1 + di * t)
 
@@ -395,9 +383,7 @@ class HarmonicDecline(DeclineModel):
         qi = float(rate[0])
         # Estimate di from rate ratio
         if len(rate) > 1 and rate[-1] > 0:
-            di = (
-                (qi / rate[-1] - 1) / time[-1] if time[-1] > 0 else 0.01
-            )
+            di = (qi / rate[-1] - 1) / time[-1] if time[-1] > 0 else 0.01
         else:
             di = 0.01
 
@@ -423,7 +409,8 @@ def fit_decline_model(
     Args:
         time: Time array.
         rate: Production rate.
-        model_type: Type of decline model ('exponential', 'hyperbolic', 'harmonic'), default 'hyperbolic'.
+        model_type: Type of decline model ('exponential', 'hyperbolic',
+            'harmonic'), default 'hyperbolic'.
 
     Returns:
         Fitted decline model.
@@ -474,7 +461,9 @@ def forecast_production(
         DataFrame with forecast results.
 
     Example:
-        >>> from geosmith.tasks.declinetask import fit_decline_model, forecast_production
+        >>> from geosmith.tasks.declinetask import (
+        ...     fit_decline_model, forecast_production
+        ... )
         >>> import numpy as np
         >>>
         >>> time = np.arange(0, 50, 1)
@@ -484,7 +473,6 @@ def forecast_production(
         >>> print(f"Forecast total: {forecast['cumulative'].iloc[-1]:.2f}")
     """
     return model.forecast(n_periods, period_length)
-
 
 
 def process_wells_parallel(
@@ -503,9 +491,11 @@ def process_wells_parallel(
 
     Args:
         well_data_list: List of (well_id, well_dataframe) tuples.
-        model_type: Decline model type ('exponential', 'hyperbolic', 'harmonic'), default 'hyperbolic'.
+        model_type: Decline model type ('exponential', 'hyperbolic',
+            'harmonic'), default 'hyperbolic'.
         date_col: Name of date column in well dataframes, default 'date'.
-        production_col: Name of production column in well dataframes, default 'production'.
+        production_col: Name of production column in well dataframes,
+            default 'production'.
         n_jobs: Number of parallel workers (default: min(cpu_count(), 8)), optional.
         batch_size: Batch size for processing (helps manage memory), default 1000.
         min_data_points: Minimum data points required for analysis, default 12.
@@ -620,12 +610,8 @@ def process_wells_parallel(
     # Set up parallel processing
     n_jobs = n_jobs or min(mp.cpu_count(), 8)
 
-    logger.info(
-        f"Processing {len(well_data_list)} wells with {n_jobs} workers"
-    )
-    logger.info(
-        f"Batch size: {batch_size}, Min data points: {min_data_points}"
-    )
+    logger.info(f"Processing {len(well_data_list)} wells with {n_jobs} workers")
+    logger.info(f"Batch size: {batch_size}, Min data points: {min_data_points}")
 
     # Process in batches
     results = []
@@ -647,4 +633,3 @@ def process_wells_parallel(
     logger.info(f"Successfully analyzed {len(results)} wells")
 
     return results
-

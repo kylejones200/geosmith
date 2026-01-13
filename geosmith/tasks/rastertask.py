@@ -46,6 +46,7 @@ class RasterTask:
 
         # Get bounding box of geometry
         from geosmith.primitives.geometry import bounding_box
+
         minx, miny, maxx, maxy = bounding_box(polygons=geometry)
 
         # Simple clip implementation (would use rasterio in production)
@@ -96,4 +97,3 @@ class RasterTask:
         logger.info(f"Computing zonal statistics with reducer={reducer}")
 
         return zonal_reduce(raster, polygons, reducer=reducer, band=band)
-

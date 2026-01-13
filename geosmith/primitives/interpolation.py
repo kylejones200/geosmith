@@ -43,16 +43,16 @@ def idw_interpolate(
     Example:
         >>> from geosmith import PointSet, GeoIndex
         >>> import numpy as np
-        >>> 
+        >>>
         >>> # Sample locations and grades
         >>> sample_coords = np.array([[100, 200, 50], [150, 250, 60], [120, 230, 55]])
         >>> sample_values = np.array([2.5, 1.8, 2.1])
         >>> samples = PointSet(coordinates=sample_coords)
-        >>> 
+        >>>
         >>> # Query point
         >>> query_coords = np.array([[130, 220, 57]])
         >>> queries = PointSet(coordinates=query_coords)
-        >>> 
+        >>>
         >>> # Interpolate
         >>> grade = idw_interpolate(samples, sample_values, queries, k=3, power=2.0)
         >>> print(f"Estimated grade: {grade[0]:.2f}")
@@ -72,15 +72,11 @@ def idw_interpolate(
         raise ValueError("Coordinates must be 2D arrays (n_points, n_dim)")
 
     if sample_coords.shape[1] != query_coords.shape[1]:
-        raise ValueError(
-            "Sample and query coordinates must have same dimensionality"
-        )
+        raise ValueError("Sample and query coordinates must have same dimensionality")
 
     sample_values = np.asarray(sample_values, dtype=np.float64)
     if len(sample_values) != len(sample_coords):
-        raise ValueError(
-            "Sample values must have same length as sample coordinates"
-        )
+        raise ValueError("Sample values must have same length as sample coordinates")
 
     if len(sample_coords) == 0:
         raise ValueError("Sample coordinates cannot be empty")
@@ -151,7 +147,9 @@ def idw_to_raster(
     if sample_points.coordinates.shape[1] == 3:
         # Use mean Z for 2D raster
         z_mean = sample_points.coordinates[:, 2].mean()
-        query_coords = np.column_stack([query_coords, np.full(len(query_coords), z_mean)])
+        query_coords = np.column_stack(
+            [query_coords, np.full(len(query_coords), z_mean)]
+        )
 
     query_points = PointSet(coordinates=query_coords)
 
@@ -173,7 +171,6 @@ def idw_to_raster(
         band_names=target_raster.band_names,
         index=target_raster.index,
     )
-
 
 
 def compute_idw_residuals(
@@ -286,4 +283,3 @@ def compute_idw_residuals(
     )
 
     return idw_predictions, residuals
-

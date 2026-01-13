@@ -34,9 +34,6 @@ raster = [
 viz = [
   "matplotlib>=3.7.0",
 ]
-timesmith = [
-  "timesmith>=0.1.0",
-]
 plotsmith = [
   "plotsmith>=0.1.0",
 ]
@@ -81,7 +78,7 @@ examples = [
   "ipykernel>=6.0"
 ]
 all = [
-  "geosmith[vector,raster,viz,primitives,ml,seismic,nlp,stratigraphy,genai,dev,docs,examples]"
+  "geosmith[vector,raster,viz,ml,seismic,nlp,stratigraphy,genai,dev,docs,examples]"
 ]
 
 [project.urls]

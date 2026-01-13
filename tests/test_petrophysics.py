@@ -93,3 +93,4 @@ class TestPickettIsolines:
             assert len(rt) == 100
             assert "Sw=" in label
 
+

@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 # Optional scipy for von Mises distribution
 try:
     from scipy.stats import vonmises
+
     SCIPY_AVAILABLE = True
 except ImportError:
     SCIPY_AVAILABLE = False
@@ -70,6 +71,7 @@ def predict_fracture_orientation(
             f"Unknown method: {method}. Choose: 'coulomb', 'griffith', 'tensile'"
         )
 
+
 def _predict_coulomb_fracture(
     shmax_azimuth: np.ndarray,
     shmin_azimuth: np.ndarray,
@@ -85,21 +87,26 @@ def _predict_coulomb_fracture(
     is_normal = stress_ratio < 1.0
     is_strike_slip = (stress_ratio >= 1.0) & (stress_ratio < 1.5)
 
-    fracture_strike = np.where(
-        is_normal,
-        shmin_azimuth + 90.0,  # Perpendicular to Shmin
+    fracture_strike = (
         np.where(
-            is_strike_slip,
-            shmax_azimuth + fracture_angle,  # At angle to Shmax
-            shmax_azimuth,  # Parallel to Shmax for reverse
-        ),
-    ) % 360.0
+            is_normal,
+            shmin_azimuth + 90.0,  # Perpendicular to Shmin
+            np.where(
+                is_strike_slip,
+                shmax_azimuth + fracture_angle,  # At angle to Shmax
+                shmax_azimuth,  # Parallel to Shmax for reverse
+            ),
+        )
+        % 360.0
+    )
 
     # Fracture dip depends on stress regime
     fracture_dip = np.where(
         is_normal,
         60.0,  # Steep dip for normal faulting
-        np.where(is_strike_slip, 90.0, 30.0),  # Vertical for strike-slip, shallow for reverse
+        np.where(
+            is_strike_slip, 90.0, 30.0
+        ),  # Vertical for strike-slip, shallow for reverse
     )
 
     fracture_type = np.where(
@@ -112,6 +119,7 @@ def _predict_coulomb_fracture(
         "type": fracture_type,
         "azimuth": fracture_strike,
     }
+
 
 def _predict_griffith_fracture(
     shmax_azimuth: np.ndarray,
@@ -134,6 +142,7 @@ def _predict_griffith_fracture(
         "azimuth": fracture_strike,
     }
 
+
 def _predict_tensile_fracture(
     shmax_azimuth: np.ndarray,
     shmin_azimuth: np.ndarray,
@@ -154,6 +163,7 @@ def _predict_tensile_fracture(
         "azimuth": fracture_strike,
     }
 
+
 def fracture_orientation_distribution(
     mean_strike: float,
     concentration: float = 10.0,
@@ -172,9 +182,13 @@ def fracture_orientation_distribution(
         Array of fracture strikes in degrees.
 
     Example:
-        >>> from geosmith.primitives.geomechanics import fracture_orientation_distribution
+        >>> from geosmith.primitives.geomechanics import (
+        ...     fracture_orientation_distribution
+        ... )
         >>>
-        >>> strikes = fracture_orientation_distribution(mean_strike=45.0, concentration=10.0, n_samples=1000)
+        >>> strikes = fracture_orientation_distribution(
+        ...     mean_strike=45.0, concentration=10.0, n_samples=1000
+        ... )
         >>> print(f"Generated {len(strikes)} fracture orientations")
     """
     # Optional scipy dependency
@@ -196,6 +210,7 @@ def fracture_orientation_distribution(
     strikes_deg = np.degrees(strikes_rad) % 360.0
 
     return strikes_deg
+
 
 def calculate_fracture_aperture(
     normal_stress: Union[np.ndarray, float],
@@ -219,7 +234,9 @@ def calculate_fracture_aperture(
     Example:
         >>> from geosmith.primitives.geomechanics import calculate_fracture_aperture
         >>>
-        >>> aperture = calculate_fracture_aperture(normal_stress=20.0, closure_stress=5.0)
+        >>> aperture = calculate_fracture_aperture(
+        ...     normal_stress=20.0, closure_stress=5.0
+        ... )
         >>> print(f"Fracture aperture: {aperture:.3f} mm")
     """
     normal_stress = np.asarray(normal_stress, dtype=float)
@@ -232,6 +249,7 @@ def calculate_fracture_aperture(
     if normal_stress.ndim == 0:
         return float(aperture)
     return aperture
+
 
 def calculate_fracture_permeability(
     aperture: Union[np.ndarray, float],
@@ -269,4 +287,3 @@ def calculate_fracture_permeability(
     if aperture.ndim == 0:
         return float(k_md)
     return k_md
-

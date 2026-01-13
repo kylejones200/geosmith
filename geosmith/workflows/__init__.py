@@ -11,6 +11,7 @@ from geosmith.workflows.drillhole import (
     merge_collar_assay,
     process_drillhole_data,
 )
+
 # Optional DLIS support (requires dlisio)
 try:
     from geosmith.workflows.dlis import DlisParser, read_dlis_file
@@ -79,6 +80,7 @@ from geosmith.workflows.segy import (
     SegySummary,
     TraceHeader,
 )
+
 # Optional NLP workflows (requires spacy or transformers)
 try:
     from geosmith.workflows.nlp import (
@@ -218,7 +220,12 @@ if RESQML_AVAILABLE:
     __all__.extend(["ResqmlParser", "read_resqml_grid", "read_resqml_properties"])
 if WITSML_AVAILABLE:
     __all__.extend(
-        ["WitsmlParser", "read_witsml_well", "read_witsml_log", "read_witsml_trajectory"]
+        [
+            "WitsmlParser",
+            "read_witsml_well",
+            "read_witsml_log",
+            "read_witsml_trajectory",
+        ]
     )
 if PPDM_AVAILABLE:
     __all__.extend(["PpdmDataModel", "PpdmParser", "read_ppdm_csv"])
@@ -238,4 +245,3 @@ if NLP_AVAILABLE:
 if PLOTTING_AVAILABLE:
     # Already in __all__, but we can add them conditionally if needed
     pass
-

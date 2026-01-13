@@ -111,11 +111,18 @@ def estimate_residual_phase(
             - peak_phases: Phase values at envelope peaks.
 
     Example:
-        >>> from geosmith.primitives.seismic import compute_hilbert_attributes, estimate_residual_phase
+        >>> from geosmith.primitives.seismic import (
+        ...     compute_hilbert_attributes, estimate_residual_phase
+        ... )
         >>>
         >>> time, envelope, phase = compute_hilbert_attributes(trace, dt)
-        >>> residual, peak_t, peak_p = estimate_residual_phase(phase, envelope, time)
-        >>> print(f"Residual phase: {residual:.2f} radians ({np.degrees(residual):.1f}°)")
+        >>> residual, peak_t, peak_p = estimate_residual_phase(
+        ...     phase, envelope, time
+        ... )
+        >>> print(
+        ...     f"Residual phase: {residual:.2f} radians "
+        ...     f"({np.degrees(residual):.1f}°)"
+        ... )
 
     Raises:
         ImportError: If scipy.signal is not available.
@@ -232,7 +239,9 @@ def correct_trace_phase(
     Example:
         >>> from geosmith.primitives.seismic import correct_trace_phase
         >>>
-        >>> corrected, shift = correct_trace_phase(trace, dt=0.004, target_phase_rad=0.0)
+        >>> corrected, shift = correct_trace_phase(
+        ...     trace, dt=0.004, target_phase_rad=0.0
+        ... )
         >>> print(f"Applied phase shift: {np.degrees(shift):.1f}°")
     """
     if not SCIPY_AVAILABLE:
@@ -261,4 +270,3 @@ def correct_trace_phase(
     corrected = apply_phase_shift(trace, phase_shift, dt)
 
     return corrected, phase_shift
-

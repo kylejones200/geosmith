@@ -78,13 +78,16 @@ class ChronostratNER(BaseEstimator):
 
     Example:
         >>> from geosmith.tasks.nlptask import ChronostratNER
-        >>> 
+        >>>
         >>> ner = ChronostratNER(model_type='spacy')
         >>> ner.fit(entity_list=['Cambrian', 'Silurian', 'Permian'])
-        >>> 
+        >>>
         >>> text = "Sedimentary rocks of Silurian age occur in a series of inliers."
         >>> result = ner.predict(text)
-        >>> print(f"Found {result.n_entities} entities: {[e.text for e in result.entities]}")
+        >>> print(
+        ...     f"Found {result.n_entities} entities: "
+        ...     f"{[e.text for e in result.entities]}"
+        ... )
     """
 
     def __init__(
@@ -99,12 +102,13 @@ class ChronostratNER(BaseEstimator):
 
         Args:
             model_type: Model type ('spacy', 'transformers', or 'hybrid').
-                       'spacy' is fast, 'transformers' is accurate, 'hybrid' combines both.
+                       'spacy' is fast, 'transformers' is accurate,
+                       'hybrid' combines both.
             entity_type: Entity type label (default: 'CHRONOSTRAT').
             use_transformer: If True, use transformer-based model for better accuracy.
-            model_name: Pre-trained model name (e.g., 'en_core_web_sm' for spaCy,
-                       'dbmdz/bert-large-cased-finetuned-conll03-english' for transformers).
-                       If None, uses default model.
+            model_name: Pre-trained model name (e.g., 'en_core_web_sm' for
+                spaCy, 'dbmdz/bert-large-cased-finetuned-conll03-english' for
+                transformers). If None, uses default model.
             confidence_threshold: Minimum confidence score for entity detection (0-1).
 
         Raises:
@@ -131,7 +135,8 @@ class ChronostratNER(BaseEstimator):
             if not SPACY_AVAILABLE:
                 raise ImportError(
                     "spaCy is required for NER. "
-                    "Install with: pip install spacy && python -m spacy download en_core_web_sm"
+                    "Install with: pip install spacy && "
+                    "python -m spacy download en_core_web_sm"
                 )
 
             model_name = self.model_name or "en_core_web_sm"
@@ -154,7 +159,8 @@ class ChronostratNER(BaseEstimator):
 
             model_name = (
                 self.model_name
-                or "dbmdz/bert-large-cased-finetuned-conll03-english"  # Pre-trained NER model
+                or "dbmdz/bert-large-cased-finetuned-conll03-english"
+                # Pre-trained NER model
             )
             self.ner_pipeline = pipeline(
                 "ner",
@@ -183,7 +189,8 @@ class ChronostratNER(BaseEstimator):
         """Train or fine-tune NER model on chronostratigraphic entities.
 
         Args:
-            entity_list: List of known chronostratigraphic terms (e.g., ['Cambrian', 'Silurian']).
+            entity_list: List of known chronostratigraphic terms
+                (e.g., ['Cambrian', 'Silurian']).
             training_texts: Optional list of training texts with entities labeled.
                            If None, uses entity_list for rule-based matching.
             validation_split: Fraction of data for validation (default 0.2).
@@ -258,12 +265,16 @@ class ChronostratNER(BaseEstimator):
         Example:
             >>> ner = ChronostratNER(model_type='spacy')
             >>> ner.fit(entity_list=['Silurian', 'Cambrian'])
-            >>> 
-            >>> result = ner.predict("Sedimentary rocks of Silurian age occur in inliers.")
+            >>>
+            >>> result = ner.predict(
+            ...     "Sedimentary rocks of Silurian age occur in inliers."
+            ... )
             >>> print(f"Found: {[e.text for e in result.entities]}")
         """
         if self.entity_list is None:
-            raise ValueError("Model must be fitted before prediction. Call fit() first.")
+            raise ValueError(
+                "Model must be fitted before prediction. Call fit() first."
+            )
 
         if isinstance(text, str):
             return self._predict_single(text)
@@ -357,8 +368,10 @@ class ChronostratNER(BaseEstimator):
             score = pred.get("score", 1.0)
 
             # Filter by entity type and confidence
-            if label == self.entity_type or label.startswith("B-") or label.startswith(
-                "I-"
+            if (
+                label == self.entity_type
+                or label.startswith("B-")
+                or label.startswith("I-")
             ):
                 if score >= self.confidence_threshold:
                     # Check if entity matches our entity list (case-insensitive)
@@ -386,9 +399,7 @@ class ChronostratNER(BaseEstimator):
             unique_labels=unique_labels,
         )
 
-    def _merge_results(
-        self, result1: NERResult, result2: NERResult
-    ) -> NERResult:
+    def _merge_results(self, result1: NERResult, result2: NERResult) -> NERResult:
         """Merge results from multiple models, removing duplicates."""
         # Combine entities, removing overlaps
         merged_entities = result1.entities.copy()
@@ -445,7 +456,7 @@ def extract_chronostrat_entities(
 
     Example:
         >>> from geosmith.tasks.nlptask import extract_chronostrat_entities
-        >>> 
+        >>>
         >>> entities = ['Cambrian', 'Silurian', 'Permian', 'Triassic']
         >>> text = "Sedimentary rocks of Silurian age occur in Permian strata."
         >>> result = extract_chronostrat_entities(text, entities)
@@ -456,4 +467,3 @@ def extract_chronostrat_entities(
     )
     ner.fit(entity_list=entity_list)
     return ner.predict(text)
-

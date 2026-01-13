@@ -14,7 +14,7 @@ from geosmith.primitives.geomechanics import (
 
 # Optional scipy dependency for fracture_orientation_distribution
 try:
-    from scipy.stats import vonmises
+    from scipy.stats import vonmises  # noqa: F401
 
     SCIPY_AVAILABLE = True
 except ImportError:
@@ -199,4 +199,5 @@ class TestCalculateFracturePermeability:
 
         # k2 should be approximately half of k1
         assert k2 == pytest.approx(k1 / 2, rel=0.1)
+
 

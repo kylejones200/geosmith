@@ -17,7 +17,7 @@ try:
     # Import from timesmith.typing (single source of truth)
     from timesmith.typing import SeriesLike
     from timesmith.typing.validators import assert_series_like
-    
+
     TIMESMITH_AVAILABLE = True
 except ImportError:
     TIMESMITH_AVAILABLE = False
@@ -29,14 +29,14 @@ def main() -> int:
     if not TIMESMITH_AVAILABLE:
         print("✓ Smoke test passed: geosmith works without timesmith (optional dependency)")
         return 0
-    
+
     # Create a pandas Series
     np.random.seed(42)
     n = 50
     values = np.random.randn(n) * 2 + 10
     index = pd.date_range("2020-01-01", periods=n, freq="D")
     y: SeriesLike = pd.Series(values, index=index, name="Test Series")
-    
+
     # Validate via timesmith.typing
     try:
         assert_series_like(y)
@@ -44,19 +44,20 @@ def main() -> int:
     except Exception as e:
         print(f"ERROR: timesmith validation failed: {e}", file=sys.stderr)
         return 1
-    
+
     # Import geosmith time series objects
     try:
-        from geosmith.objects.timeseries import SeriesLike as GeoSeriesLike
-        from geosmith.objects.timeseries import assert_series_like as geo_assert_series_like
-        
+        from geosmith.objects.timeseries import (
+            assert_series_like as geo_assert_series_like,
+        )
+
         # Verify they work together
         geo_assert_series_like(y)
         print("✓ geosmith timeseries objects work with timesmith.typing")
-        
+
         print("✓ Smoke test passed: geosmith works with timesmith typing")
         return 0
-        
+
     except Exception as e:
         print(f"ERROR: geosmith integration failed: {e}", file=sys.stderr)
         import traceback
@@ -66,3 +67,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+

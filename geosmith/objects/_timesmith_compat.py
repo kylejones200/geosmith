@@ -71,4 +71,3 @@ def validate_table_like(
     # TableLike is a Protocol, so we validate and return the pandas DataFrame
     assert_table_like(table)
     return table  # type: ignore[return-value]
-

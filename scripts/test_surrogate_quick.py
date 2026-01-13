@@ -15,18 +15,18 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 def test_basic_structure():
     """Test basic code structure."""
     print("Testing surrogate model structure...")
-    
+
     # Check files exist
     surrogate_file = Path(__file__).parent.parent / "geosmith" / "primitives" / "surrogate.py"
     task_file = Path(__file__).parent.parent / "geosmith" / "tasks" / "surrogatetask.py"
     example_file = Path(__file__).parent.parent / "examples" / "surrogate_example.py"
-    
+
     assert surrogate_file.exists(), "surrogate.py not found"
     assert task_file.exists(), "surrogatetask.py not found"
     assert example_file.exists(), "surrogate_example.py not found"
-    
+
     print("✅ All files exist")
-    
+
     # Check for required classes/functions
     with open(surrogate_file) as f:
         code = f.read()
@@ -36,79 +36,77 @@ def test_basic_structure():
         assert "def fit" in code
         assert "def predict" in code
         assert "BaseSpatialModel" in code
-    
+
     print("✅ SurrogateModel has required methods")
-    
+
     with open(task_file) as f:
         code = f.read()
         assert "class SurrogateTask" in code
         assert "def train_emulator" in code
         assert "def predict" in code
         assert "def validate_emulator" in code
-    
+
     print("✅ SurrogateTask has required methods")
-    
+
     return True
 
 
 def test_imports():
     """Test that imports are set up correctly."""
     print("\nTesting imports...")
-    
+
     # Test that imports are conditional
     try:
-        from geosmith.primitives import __init__ as primitives_init
         primitives_code = Path(__file__).parent.parent / "geosmith" / "primitives" / "__init__.py"
-        
+
         with open(primitives_code) as f:
             code = f.read()
             assert "try:" in code or "SURROGATE_AVAILABLE" in code
             assert "SurrogateModel" in code or "surrogate" in code.lower()
-        
+
         print("✅ Primitives __init__.py has conditional imports")
     except Exception as e:
         print(f"⚠️  Could not verify primitives imports: {e}")
-    
+
     # Test that task imports are conditional
     try:
         tasks_code = Path(__file__).parent.parent / "geosmith" / "tasks" / "__init__.py"
         with open(tasks_code) as f:
             code = f.read()
             assert "SurrogateTask" in code or "surrogate" in code.lower()
-        
+
         print("✅ Tasks __init__.py has conditional imports")
     except Exception as e:
         print(f"⚠️  Could not verify tasks imports: {e}")
-    
+
     return True
 
 
 def test_dependencies_check():
     """Test that dependency checks work correctly."""
     print("\nTesting dependency checks...")
-    
+
     # Check sklearn availability
     try:
-        import sklearn
+        import sklearn  # noqa: F401
         sklearn_available = True
         print("✅ scikit-learn is available")
     except ImportError:
         sklearn_available = False
         print("⚠️  scikit-learn not available (expected for this test)")
-    
+
     # Check xgboost availability
     try:
-        import xgboost
+        import xgboost  # noqa: F401
         xgboost_available = True
         print("✅ xgboost is available")
     except ImportError:
         xgboost_available = False
         print("⚠️  xgboost not available (expected for this test)")
-    
+
     # Try to import surrogate module
     if sklearn_available:
         try:
-            from geosmith.primitives.surrogate import SurrogateModel
             print("✅ SurrogateModel can be imported")
             return True
         except Exception as e:
@@ -123,15 +121,15 @@ def test_dependencies_check():
 def test_code_syntax():
     """Test that code has valid syntax."""
     print("\nTesting code syntax...")
-    
+
     import ast
-    
+
     files_to_check = [
         "geosmith/primitives/surrogate.py",
         "geosmith/tasks/surrogatetask.py",
         "examples/surrogate_example.py",
     ]
-    
+
     for file_path in files_to_check:
         full_path = Path(__file__).parent.parent / file_path
         if full_path.exists():
@@ -144,7 +142,7 @@ def test_code_syntax():
                 return False
         else:
             print(f"⚠️  {file_path} not found")
-    
+
     return True
 
 
@@ -154,17 +152,17 @@ def main():
     print("Quick Surrogate Model Tests")
     print("=" * 70)
     print()
-    
+
     tests = [
         ("Structure", test_basic_structure),
         ("Imports", test_imports),
         ("Syntax", test_code_syntax),
         ("Dependencies", test_dependencies_check),
     ]
-    
+
     passed = 0
     total = len(tests)
-    
+
     for name, test_func in tests:
         try:
             if test_func():
@@ -176,11 +174,11 @@ def main():
             print(f"❌ {name} test raised exception: {e}\n")
             import traceback
             traceback.print_exc()
-    
+
     print("=" * 70)
     print(f"Tests passed: {passed}/{total}")
     print("=" * 70)
-    
+
     if passed == total:
         print("\n🎉 All structure tests passed!")
         print("\nTo test full functionality, install dependencies:")
@@ -195,4 +193,5 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+
 

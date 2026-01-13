@@ -45,3 +45,4 @@ print(features.head())
 
 This is the GeoSmith loop. Objects represent space. Primitives compute geometry. Tasks express intent. Workflows handle I O and integration.
 
+

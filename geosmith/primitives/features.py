@@ -101,7 +101,9 @@ def build_spatial_features(
     # 2. Local point density (distance to k-th nearest neighbor)
     if include_density:
         tree = KDTree(coords)
-        k_actual = min(k_neighbors + 1, len(coords))  # +1 because first neighbor is self
+        k_actual = min(
+            k_neighbors + 1, len(coords)
+        )  # +1 because first neighbor is self
         distances_nn, _ = tree.query(coords, k=k_actual)
 
         if distances_nn.ndim == 1:
@@ -187,12 +189,18 @@ def build_block_model_features(
         Feature matrix (n_blocks, n_features).
 
     Example:
-        >>> from geosmith.primitives.features import build_spatial_features, build_block_model_features
+        >>> from geosmith.primitives.features import (
+        ...     build_spatial_features, build_block_model_features
+        ... )
         >>>
         >>> # Build features on samples
-        >>> features, scalers = build_spatial_features(sample_coords, return_scalers=True)
+        >>> features, scalers = build_spatial_features(
+        ...     sample_coords, return_scalers=True
+        ... )
         >>> # Build features on grid using same scalers
-        >>> grid_features = build_block_model_features(grid_coords, sample_coords, scalers)
+        >>> grid_features = build_block_model_features(
+        ...     grid_coords, sample_coords, scalers
+        ... )
 
     Raises:
         ImportError: If scikit-learn is not available.
@@ -288,4 +296,3 @@ def build_block_model_features(
     )
 
     return features
-

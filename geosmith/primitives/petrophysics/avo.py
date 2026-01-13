@@ -9,7 +9,10 @@ from typing import TYPE_CHECKING, Optional, Union
 import numpy as np
 
 from geosmith.primitives.petrophysics._common import logger, njit
-from geosmith.primitives.petrophysics.rock_physics import calculate_velocities_from_slowness
+from geosmith.primitives.petrophysics.rock_physics import (
+    calculate_velocities_from_slowness,
+)
+
 
 def preprocess_avo_inputs(
     vp: Union[np.ndarray, float],
@@ -100,15 +103,17 @@ def calculate_avo_attributes(
 ) -> dict[str, np.ndarray]:
     """Calculate AVO (Amplitude Versus Offset) attributes from velocities and density.
 
-    Computes AVO attributes including intercept, gradient, curvature, Poisson's ratio,
-    reflectivities, and fluid factor based on Shuey (1985) approximation of Zoeppritz equations.
+    Computes AVO attributes including intercept, gradient, curvature,
+    Poisson's ratio, reflectivities, and fluid factor based on Shuey (1985)
+    approximation of Zoeppritz equations.
 
     Args:
         vp: P-wave velocity (m/s).
         vs: S-wave velocity (m/s).
         rho: Density (g/cc).
         return_all: If True, return dict with all attributes.
-                   If False, return dict with only key attributes (A, B, PR, Rp, Rs, FF).
+                   If False, return dict with only key attributes
+                   (A, B, PR, Rp, Rs, FF).
 
     Returns:
         Dictionary with AVO attributes:
@@ -171,7 +176,7 @@ def calculate_avo_attributes(
     # Poisson's Ratio: PR = (gamma^2 - 2) / (2*gamma^2 - 2)
     # where gamma = VP/VS
     gamma = vp_avg / vs_avg
-    gamma_sq = gamma ** 2
+    gamma_sq = gamma**2
     PR = (gamma_sq - 2) / (2 * gamma_sq - 2)
     PR = np.where(np.isnan(PR) | np.isinf(PR), np.nan, PR)
 

@@ -8,10 +8,8 @@ Separates:
 """
 
 import ast
-import re
-from pathlib import Path
-from typing import Dict, List, Tuple
 from collections import defaultdict
+from pathlib import Path
 
 GEOSUITE_ML = Path("/Users/kylejonespatricia/geosuite/geosuite/ml")
 GEOSMITH_PRIMITIVES = Path("geosmith/primitives")
@@ -55,13 +53,13 @@ WORKFLOWS_GROUPS = {
 TASKS_TO_CHECK = ["FaciesTask", "ClusteringTask", "PermeabilityPredictor", "PorosityPredictor"]
 
 
-def extract_functions_from_file(source_file: Path) -> List[Dict]:
+def extract_functions_from_file(source_file: Path) -> list[dict]:
     """Extract all functions and classes from a Python file using AST."""
     try:
         content = source_file.read_text()
         tree = ast.parse(content)
         source_lines = content.splitlines()
-        
+
         functions = []
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef):
@@ -69,12 +67,12 @@ def extract_functions_from_file(source_file: Path) -> List[Dict]:
                 if node.decorator_list:
                     start_line = node.decorator_list[0].lineno - 1
                 end_line = node.end_lineno if hasattr(node, 'end_lineno') else start_line + 50
-                
+
                 func_code = "\n".join(source_lines[start_line:end_line])
-                
+
                 # Check if it contains plotting (violates Layer 2)
                 has_plotting = any(keyword in func_code.lower() for keyword in ["plt.", "matplotlib", "figure", "plot("])
-                
+
                 functions.append({
                     "name": node.name,
                     "type": "function",
@@ -88,10 +86,10 @@ def extract_functions_from_file(source_file: Path) -> List[Dict]:
                 if node.decorator_list:
                     start_line = node.decorator_list[0].lineno - 1
                 end_line = node.end_lineno if hasattr(node, 'end_lineno') else start_line + 100
-                
+
                 class_code = "\n".join(source_lines[start_line:end_line])
                 has_plotting = any(keyword in class_code.lower() for keyword in ["plt.", "matplotlib", "figure", "plot("])
-                
+
                 functions.append({
                     "name": node.name,
                     "type": "class",
@@ -100,18 +98,18 @@ def extract_functions_from_file(source_file: Path) -> List[Dict]:
                     "end_line": end_line,
                     "has_plotting": has_plotting,
                 })
-        
+
         return functions
     except Exception as e:
         print(f"⚠ Error parsing {source_file}: {e}")
         return []
 
 
-def assign_to_layer(func_name: str, func_code: str, has_plotting: bool) -> Tuple[str, str]:
+def assign_to_layer(func_name: str, func_code: str, has_plotting: bool) -> tuple[str, str]:
     """Assign function to appropriate layer and module."""
     func_lower = func_name.lower()
     code_lower = func_code.lower()
-    
+
     # Plotting functions → Workflows
     if has_plotting or any(keyword in code_lower for keyword in ["plt.", "matplotlib", "figure", "signalplot"]):
         for group, config in WORKFLOWS_GROUPS.items():
@@ -121,18 +119,18 @@ def assign_to_layer(func_name: str, func_code: str, has_plotting: bool) -> Tuple
         if "plot" in func_lower or "shap" in func_lower or "partial" in func_lower:
             return "workflows", "interpretability_plots"
         return "workflows", "confusion_matrix_plots"
-    
+
     # Pure operations → Primitives
     for group, config in PRIMITIVES_GROUPS.items():
         patterns = config.get("patterns", [])
         forbidden = config.get("forbidden", [])
-        
+
         if any(keyword in code_lower for keyword in forbidden):
             continue
-        
+
         if any(pattern.lower() in func_lower for pattern in patterns):
             return "primitives", group
-    
+
     # Default: try to infer from name
     if "interpret" in func_lower or "importance" in func_lower or "shap" in func_lower:
         return "primitives", "interpretability"
@@ -142,7 +140,7 @@ def assign_to_layer(func_name: str, func_code: str, has_plotting: bool) -> Tuple
         return "primitives", "model_utils"
     elif "optimize" in func_lower or "hyperparameter" in func_lower:
         return "primitives", "hyperparameter"
-    
+
     return "primitives", "interpretability"  # Default fallback
 
 
@@ -153,7 +151,7 @@ def clean_code_for_layer(code: str, target_layer: str) -> str:
         lines = code.split("\n")
         cleaned = []
         skip_next = False
-        
+
         for i, line in enumerate(lines):
             # Skip matplotlib imports
             if any(pattern in line for pattern in ["import matplotlib", "import plt", "import signalplot", "from matplotlib"]):
@@ -165,19 +163,19 @@ def clean_code_for_layer(code: str, target_layer: str) -> str:
             if line.strip().startswith("def plot_") and target_layer == "primitives":
                 # Don't include plotting functions in primitives
                 break
-            
+
             # Remove plt. calls but keep return fig
             if "plt." in line and target_layer == "primitives":
                 continue
-            
+
             cleaned.append(line)
-        
+
         return "\n".join(cleaned)
-    
+
     return code
 
 
-def generate_module_content(functions: List[Dict], module_name: str, description: str, layer: str) -> str:
+def generate_module_content(functions: list[dict], module_name: str, description: str, layer: str) -> str:
     """Generate content for a module."""
     header = f'''"""Geosmith ML: {description}
 
@@ -242,16 +240,16 @@ except ImportError:
     shap = None  # type: ignore
 
 '''
-    
+
     header += "import logging\n\n"
     header += "logger = logging.getLogger(__name__)\n\n"
-    
+
     # Combine function sources (sorted by line number)
     funcs_sorted = sorted(functions, key=lambda x: x["start_line"])
     module_content = header + "\n\n\n".join(
         clean_code_for_layer(func["code"], layer) for func in funcs_sorted
     ) + "\n"
-    
+
     return module_content
 
 
@@ -260,61 +258,61 @@ def main():
     if not GEOSUITE_ML.exists():
         print(f"❌ GeoSuite ML directory not found: {GEOSUITE_ML}")
         return
-    
+
     # Get all Python files from geosuite/ml
     source_files = [f for f in GEOSUITE_ML.glob("*.py") if f.name != "__init__.py"]
-    
+
     all_functions = defaultdict(lambda: defaultdict(list))
-    
+
     # Extract all functions
     for source_file in source_files:
         print(f"📄 Scanning {source_file.name}...")
         functions = extract_functions_from_file(source_file)
-        
+
         for func in functions:
             layer, group = assign_to_layer(func["name"], func["code"], func["has_plotting"])
             all_functions[layer][group].append(func)
-    
+
     # Create package directories
     ml_primitives_dir = GEOSMITH_PRIMITIVES / "ml"
     ml_primitives_dir.mkdir(exist_ok=True)
-    
+
     ml_workflows_dir = GEOSMITH_WORKFLOWS / "plotting"
     ml_workflows_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Generate primitives modules
     print("\n📦 Creating primitives modules...")
     for group, funcs in all_functions.get("primitives", {}).items():
         if not funcs:
             continue
-        
+
         config = PRIMITIVES_GROUPS.get(group, {"description": group.replace("_", " ").title()})
         module_file = ml_primitives_dir / f"{group}.py"
         module_content = generate_module_content(funcs, group, config["description"], "primitives")
         module_file.write_text(module_content)
         print(f"   ✅ {module_file}: {len(funcs)} functions/classes")
-    
+
     # Generate workflows modules (append to existing plotting.py if needed)
     print("\n📊 Creating workflows modules...")
     for group, funcs in all_functions.get("workflows", {}).items():
         if not funcs:
             continue
-        
+
         config = WORKFLOWS_GROUPS.get(group, {"description": group.replace("_", " ").title()})
         module_file = ml_workflows_dir / f"ml_{group}.py"
         module_content = generate_module_content(funcs, group, config["description"], "workflows")
         module_file.write_text(module_content)
         print(f"   ✅ {module_file}: {len(funcs)} functions/classes")
-    
+
     # Generate __init__.py for primitives/ml
     init_content = generate_primitives_init(all_functions.get("primitives", {}))
     (ml_primitives_dir / "__init__.py").write_text(init_content)
     print(f"\n   ✅ {ml_primitives_dir / '__init__.py'}")
-    
+
     print("\n✅ ML module migration complete!")
 
 
-def generate_primitives_init(module_assignments: Dict) -> str:
+def generate_primitives_init(module_assignments: dict) -> str:
     """Generate __init__.py for primitives/ml package."""
     content = '''"""Geosmith ML primitives (modular package).
 
@@ -331,12 +329,12 @@ This package maintains backward compatibility with the original flat import:
 # Import order matters - avoid circular imports
 
 '''
-    
+
     # Import from submodules
     for group, funcs in module_assignments.items():
         if not funcs:
             continue
-        
+
         func_names = [f['name'] for f in funcs]
         if func_names:
             content += f"# {group.replace('_', ' ').title()}\n"
@@ -344,14 +342,15 @@ This package maintains backward compatibility with the original flat import:
             for name in sorted(func_names):
                 content += f"    {name},\n"
             content += ")\n\n"
-    
+
     # Generate __all__
     all_names = [f['name'] for funcs in module_assignments.values() for f in funcs]
     content += f"\n__all__ = {sorted(all_names)!r}\n"
-    
+
     return content
 
 
 if __name__ == "__main__":
     main()
+
 

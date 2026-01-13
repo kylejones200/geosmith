@@ -8,8 +8,8 @@ import pytest
 
 # Try to import scikit-learn for tests
 try:
-    from sklearn.neighbors import KDTree
-    from sklearn.preprocessing import PolynomialFeatures, StandardScaler
+    from sklearn.neighbors import KDTree  # noqa: F401
+    from sklearn.preprocessing import PolynomialFeatures, StandardScaler  # noqa: F401
 
     SKLEARN_AVAILABLE = True
 except ImportError:
@@ -189,4 +189,5 @@ class TestBuildBlockModelFeatures:
 
         with pytest.raises(ImportError, match="scikit-learn is required"):
             build_block_model_features(grid_coords, sample_coords, scalers)
+
 

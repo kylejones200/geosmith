@@ -43,6 +43,7 @@ def calculate_overpressure(
     """
     return np.asarray(pp, dtype=float) - np.asarray(ph, dtype=float)
 
+
 @njit(cache=True, fastmath=True)
 def _calculate_pressure_gradient_kernel(
     pressure: np.ndarray, depth: np.ndarray
@@ -79,6 +80,7 @@ def _calculate_pressure_gradient_kernel(
 
     return gradient
 
+
 def calculate_pressure_gradient(
     pressure: Union[np.ndarray, float],
     depth: Union[np.ndarray, float],
@@ -111,6 +113,7 @@ def calculate_pressure_gradient(
 
     # Call optimized kernel
     return _calculate_pressure_gradient_kernel(pressure, depth)
+
 
 def pressure_to_mud_weight(
     pressure: Union[np.ndarray, float],
@@ -158,6 +161,7 @@ def pressure_to_mud_weight(
         return float(mw)
     return mw
 
+
 @njit(cache=True, fastmath=True)
 def _calculate_overburden_stress_kernel(
     depth: np.ndarray, rhob_kg: np.ndarray, g: float
@@ -191,6 +195,7 @@ def _calculate_overburden_stress_kernel(
             sv[i] = sv[i - 1] if i > 1 else 0.0
 
     return sv
+
 
 def calculate_overburden_stress(
     depth: Union[np.ndarray, float],
@@ -250,6 +255,7 @@ def calculate_overburden_stress(
 
         return sv
 
+
 def calculate_hydrostatic_pressure(
     depth: Union[np.ndarray, float],
     rho_water: float = 1.03,
@@ -285,6 +291,7 @@ def calculate_hydrostatic_pressure(
     ph = rho_water_kg * g * depth / 1e6  # Convert Pa to MPa
 
     return ph
+
 
 def pore_pressure_eaton(
     sv: Union[np.ndarray, float, "pd.Series"],
@@ -347,6 +354,7 @@ def pore_pressure_eaton(
     elif np.ndim(sv) == 0:
         return float(pp)
     return pp
+
 
 def sv_from_density(
     depth: Union[np.ndarray, float, "pd.Series"],
@@ -420,6 +428,7 @@ def sv_from_density(
         return pd.Series(sv_mpa, index=rhob_orig.index)
     return sv_mpa
 
+
 def mud_weight_equivalent(
     pressure: Union[np.ndarray, float, "pd.Series"],
     depth: Union[np.ndarray, float, "pd.Series"],
@@ -475,6 +484,7 @@ def mud_weight_equivalent(
         return float(emw)
     return emw
 
+
 def _calculate_overburden_stress_kernel(
     depth: np.ndarray,
     rhob_kg: np.ndarray,
@@ -513,6 +523,7 @@ def _calculate_overburden_stress_kernel(
 
     return _kernel(depth, rhob_kg, g)
 
+
 def calculate_pore_pressure_eaton_sonic(
     depth: Union[np.ndarray, float, "pd.Series"],
     dt: Union[np.ndarray, float, "pd.Series"],
@@ -539,7 +550,9 @@ def calculate_pore_pressure_eaton_sonic(
         Pore pressure (MPa).
 
     Example:
-        >>> from geosmith.primitives.geomechanics import calculate_pore_pressure_eaton_sonic
+        >>> from geosmith.primitives.geomechanics import (
+        ...     calculate_pore_pressure_eaton_sonic
+        ... )
         >>> import numpy as np
         >>>
         >>> depth = np.array([1000, 2000, 3000])
@@ -592,6 +605,7 @@ def calculate_pore_pressure_eaton_sonic(
     elif np.ndim(sv) == 0:
         return float(pp)
     return pp
+
 
 def calculate_pore_pressure_bowers(
     depth: Union[np.ndarray, float, "pd.Series"],
@@ -682,6 +696,7 @@ def calculate_pore_pressure_bowers(
         return float(pp)
     return pp
 
+
 def _calculate_pressure_gradient_kernel(
     pressure: np.ndarray, depth: np.ndarray
 ) -> np.ndarray:
@@ -716,4 +731,3 @@ def _calculate_pressure_gradient_kernel(
         return gradient
 
     return _kernel(pressure, depth)
-

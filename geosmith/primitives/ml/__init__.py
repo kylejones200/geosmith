@@ -41,4 +41,19 @@ from geosmith.primitives.ml.model_utils import (
     display_cm,
 )
 
-__all__ = ['SpatialCrossValidator', 'SubsurfaceHyperparameterOptimizer', 'WellBasedKFold', '_adjust_confusion_matrix_kernel', 'calculate_shap_values', 'compute_metrics_from_cm', 'confusion_matrix_to_dataframe', 'display_adj_cm', 'display_cm', 'get_feature_importance', 'objective', 'optimize_facies_classifier', 'optimize_property_predictor', 'partial_dependence_plot']
+__all__ = [
+    "SpatialCrossValidator",
+    "SubsurfaceHyperparameterOptimizer",
+    "WellBasedKFold",
+    "_adjust_confusion_matrix_kernel",
+    "calculate_shap_values",
+    "compute_metrics_from_cm",
+    "confusion_matrix_to_dataframe",
+    "display_adj_cm",
+    "display_cm",
+    "get_feature_importance",
+    "objective",
+    "optimize_facies_classifier",
+    "optimize_property_predictor",
+    "partial_dependence_plot",
+]

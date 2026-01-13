@@ -20,6 +20,7 @@ def is_anomsmith_available() -> bool:
     """
     try:
         import anomsmith  # noqa: F401
+
         return True
     except ImportError:
         return False
@@ -69,7 +70,9 @@ def detect_spatial_anomalies(
 
         return SpatialAnomalyResult(
             scores=scores,
-            spatial_features=as_result.features if hasattr(as_result, "features") else None,
+            spatial_features=(
+                as_result.features if hasattr(as_result, "features") else None
+            ),
             metadata=as_result.metadata if hasattr(as_result, "metadata") else None,
         )
     except ImportError:
@@ -85,7 +88,8 @@ def to_anomsmith_scores(scores: Union[AnomalyScores, np.ndarray]) -> AnomalyScor
         scores: GeoSmith AnomalyScores or numpy array of scores.
 
     Returns:
-        AnomSmith-compatible AnomalyScores if available, otherwise GeoSmith AnomalyScores.
+        AnomSmith-compatible AnomalyScores if available,
+        otherwise GeoSmith AnomalyScores.
     """
     if isinstance(scores, AnomalyScores):
         return scores.to_anomsmith()
@@ -119,4 +123,3 @@ def from_anomsmith_result(as_result) -> SpatialAnomalyResult:
         spatial_features=as_result.features if hasattr(as_result, "features") else None,
         metadata=as_result.metadata if hasattr(as_result, "metadata") else None,
     )
-

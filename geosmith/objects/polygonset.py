@@ -95,13 +95,10 @@ class PolygonSet:
     def __repr__(self) -> str:
         """String representation."""
         n_polygons = len(self.rings)
-        n_dims = (
-            self.rings[0][0].shape[1] if self.rings and self.rings[0] else 0
-        )
+        n_dims = self.rings[0][0].shape[1] if self.rings and self.rings[0] else 0
         has_attrs = self.attributes is not None
         has_index = self.index is not None
         return (
             f"PolygonSet(n_polygons={n_polygons}, n_dims={n_dims}, "
             f"has_attributes={has_attrs}, has_index={has_index})"
         )
-

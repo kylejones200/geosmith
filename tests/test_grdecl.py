@@ -1,9 +1,10 @@
 """Tests for GRDECL I/O workflows."""
 
+import tempfile
+from pathlib import Path
+
 import numpy as np
 import pytest
-from pathlib import Path
-import tempfile
 
 from geosmith.workflows.grdecl import read_grdecl, write_grdecl
 
@@ -98,7 +99,7 @@ class TestWriteGRDECL:
         try:
             write_grdecl(data, temp_path)
             assert Path(temp_path).exists()
-            
+
             # Read it back
             read_data = read_grdecl(temp_path)
             assert read_data['dimensions'] == (5, 5, 3)
@@ -112,8 +113,8 @@ class TestWriteGRDECL:
 
     def test_write_grdecl_from_rastergrid(self):
         """Test writing GRDECL from RasterGrid."""
-        from geosmith.objects.rastergrid import RasterGrid
         from geosmith.objects.geoindex import GeoIndex
+        from geosmith.objects.rastergrid import RasterGrid
 
         data = np.ones((3, 5, 5)) * 0.5
         transform = (1.0, 0.0, 0.0, 0.0, -1.0, 0.0)
@@ -126,7 +127,7 @@ class TestWriteGRDECL:
         try:
             write_grdecl(raster, temp_path, property_name='PERMX')
             assert Path(temp_path).exists()
-            
+
             # Read it back
             read_data = read_grdecl(temp_path)
             assert read_data['dimensions'] == (5, 5, 3)
@@ -135,8 +136,8 @@ class TestWriteGRDECL:
 
     def test_write_grdecl_missing_property_name(self):
         """Test that RasterGrid without property_name raises error."""
-        from geosmith.objects.rastergrid import RasterGrid
         from geosmith.objects.geoindex import GeoIndex
+        from geosmith.objects.rastergrid import RasterGrid
 
         data = np.ones((3, 5, 5)) * 0.5
         transform = (1.0, 0.0, 0.0, 0.0, -1.0, 0.0)

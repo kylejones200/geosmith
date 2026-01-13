@@ -167,3 +167,4 @@ class TestCalculateHydrostaticPressure:
         # At 2000m, pressure should be ~20 MPa
         assert ph[1] == pytest.approx(20.0, rel=0.1)
 
+

@@ -34,7 +34,9 @@ class LineSet:
         n_dims = None
         for i, verts in enumerate(self.vertices):
             if not isinstance(verts, np.ndarray):
-                raise ValueError(f"vertices[{i}] must be numpy array, got {type(verts)}")
+                raise ValueError(
+                    f"vertices[{i}] must be numpy array, got {type(verts)}"
+                )
             if verts.ndim != 2:
                 raise ValueError(
                     f"vertices[{i}] must be 2D array, got shape {verts.shape}"
@@ -83,4 +85,3 @@ class LineSet:
             f"LineSet(n_lines={n_lines}, n_dims={n_dims}, "
             f"has_attributes={has_attrs}, has_index={has_index})"
         )
-

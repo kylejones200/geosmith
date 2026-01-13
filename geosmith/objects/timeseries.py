@@ -17,7 +17,7 @@ try:
 
     # Alias assert_table as assert_table_like for consistency
     assert_table_like = assert_table
-    
+
     __all__ = [
         "PanelLike",
         "SeriesLike",

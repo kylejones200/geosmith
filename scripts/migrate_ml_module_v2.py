@@ -9,9 +9,8 @@ Strategy:
 """
 
 import ast
-from pathlib import Path
-from typing import Dict, List, Tuple
 from collections import defaultdict
+from pathlib import Path
 
 GEOSUITE_ML = Path("/Users/kylejonespatricia/geosuite/geosuite/ml")
 GEOSMITH_PRIMITIVES = Path("geosmith/primitives")
@@ -42,13 +41,13 @@ FILE_MAPPING = {
 }
 
 
-def extract_top_level_functions(source_file: Path) -> List[Dict]:
+def extract_top_level_functions(source_file: Path) -> list[dict]:
     """Extract only top-level functions and classes from a Python file."""
     try:
         content = source_file.read_text()
         tree = ast.parse(content)
         source_lines = content.splitlines()
-        
+
         functions = []
         for node in ast.walk(tree):
             # Only extract top-level functions/classes (module-level)
@@ -57,25 +56,25 @@ def extract_top_level_functions(source_file: Path) -> List[Dict]:
                 parent = getattr(node, 'parent', None)
                 if parent and isinstance(parent, (ast.FunctionDef, ast.ClassDef)):
                     continue  # Skip nested definitions
-                
+
                 # Assign parent for nested detection
                 for child in ast.iter_child_nodes(node):
                     child.parent = node
-                
+
                 start_line = node.lineno - 1
                 if node.decorator_list:
                     start_line = node.decorator_list[0].lineno - 1
                 end_line = node.end_lineno if hasattr(node, 'end_lineno') else start_line + 50
-                
+
                 func_code = "\n".join(source_lines[start_line:end_line])
-                
+
                 # Check if it contains plotting
                 code_lower = func_code.lower()
                 has_plotting = any(
                     keyword in code_lower
                     for keyword in ["plt.", "matplotlib", "figure(", "signalplot", "plot("]
                 ) and "def plot_" in func_code.lower()
-                
+
                 functions.append({
                     "name": node.name,
                     "type": "class" if isinstance(node, ast.ClassDef) else "function",
@@ -85,24 +84,24 @@ def extract_top_level_functions(source_file: Path) -> List[Dict]:
                     "has_plotting": has_plotting,
                     "source_file": source_file.name,
                 })
-        
+
         return functions
     except Exception as e:
         print(f"⚠ Error parsing {source_file}: {e}")
         return []
 
 
-def separate_plotting_functions(functions: List[Dict]) -> Tuple[List[Dict], List[Dict]]:
+def separate_plotting_functions(functions: list[dict]) -> tuple[list[dict], list[dict]]:
     """Separate plotting functions from pure operations."""
     pure = []
     plotting = []
-    
+
     for func in functions:
         if func["has_plotting"] or func["name"].startswith("plot_"):
             plotting.append(func)
         else:
             pure.append(func)
-    
+
     return pure, plotting
 
 
@@ -110,7 +109,7 @@ def generate_module_header(module_name: str, description: str, layer: str) -> st
     """Generate module header."""
     layer_num = 2 if layer == "primitives" else 4
     layer_desc = "Primitives - Pure operations" if layer == "primitives" else "Workflows - Plotting and I/O"
-    
+
     header = f'''"""Geosmith ML: {description}
 
 Migrated from geosuite.ml.
@@ -125,7 +124,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 '''
-    
+
     if layer == "primitives":
         header += '''
 try:
@@ -194,7 +193,7 @@ except ImportError:
     signalplot = None  # type: ignore
 
 '''
-    
+
     return header
 
 
@@ -203,50 +202,50 @@ def main():
     if not GEOSUITE_ML.exists():
         print(f"❌ GeoSuite ML directory not found: {GEOSUITE_ML}")
         return
-    
+
     # Create directories
     ml_primitives_dir = GEOSMITH_PRIMITIVES / "ml"
     ml_primitives_dir.mkdir(exist_ok=True)
-    
+
     ml_workflows_dir = GEOSMITH_WORKFLOWS / "plotting"
     ml_workflows_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Process each source file
     primitives_modules = defaultdict(list)
     workflows_modules = defaultdict(list)
-    
+
     for source_file in sorted(GEOSUITE_ML.glob("*.py")):
         if source_file.name == "__init__.py":
             continue
-        
+
         mapping = FILE_MAPPING.get(source_file.name, None)
         if mapping == "skip":
             print(f"⏭ Skipping {source_file.name} (may belong in tasks layer)")
             continue
-        
+
         if mapping is None:
             print(f"⚠ No mapping for {source_file.name}, skipping")
             continue
-        
+
         print(f"📄 Processing {source_file.name}...")
         functions = extract_top_level_functions(source_file)
-        
+
         if "primitives" in mapping:
             pure, plotting = separate_plotting_functions(functions)
             primitives_modules[mapping["primitives"]].extend(pure)
             if plotting:
                 if "workflows" in mapping:
                     workflows_modules[mapping["workflows"]].extend(plotting)
-        
+
         elif "workflows" in mapping:
             workflows_modules[mapping["workflows"]].extend(functions)
-    
+
     # Generate primitives modules
     print("\n📦 Creating primitives modules...")
     for module_name, funcs in primitives_modules.items():
         if not funcs:
             continue
-        
+
         funcs_sorted = sorted(funcs, key=lambda x: x["start_line"])
         descriptions = {
             "interpretability": "Model interpretability calculations (feature importance, SHAP)",
@@ -254,42 +253,42 @@ def main():
             "model_utils": "Model evaluation utilities (confusion matrix calculations)",
             "hyperparameter": "Hyperparameter optimization utilities",
         }
-        
+
         header = generate_module_header(module_name, descriptions.get(module_name, module_name), "primitives")
         module_content = header + "\n\n\n".join(func["code"] for func in funcs_sorted) + "\n"
-        
+
         module_file = ml_primitives_dir / f"{module_name}.py"
         module_file.write_text(module_content)
         print(f"   ✅ {module_file}: {len(funcs)} functions/classes ({module_file.stat().st_size // 1024}KB)")
-    
+
     # Generate workflows modules
     print("\n📊 Creating workflows modules...")
     for module_name, funcs in workflows_modules.items():
         if not funcs:
             continue
-        
+
         funcs_sorted = sorted(funcs, key=lambda x: x["start_line"])
         descriptions = {
             "ml_interpretability_plots": "Model interpretability plotting",
             "ml_confusion_matrix_plots": "Confusion matrix visualization",
         }
-        
+
         header = generate_module_header(module_name, descriptions.get(module_name, module_name), "workflows")
         module_content = header + "\n\n\n".join(func["code"] for func in funcs_sorted) + "\n"
-        
+
         module_file = ml_workflows_dir / f"{module_name}.py"
         module_file.write_text(module_content)
         print(f"   ✅ {module_file}: {len(funcs)} functions/classes ({module_file.stat().st_size // 1024}KB)")
-    
+
     # Generate __init__.py for primitives/ml
     init_content = generate_primitives_init(primitives_modules)
     (ml_primitives_dir / "__init__.py").write_text(init_content)
     print(f"\n   ✅ {ml_primitives_dir / '__init__.py'}")
-    
+
     print("\n✅ ML module migration complete!")
 
 
-def generate_primitives_init(module_assignments: Dict) -> str:
+def generate_primitives_init(module_assignments: dict) -> str:
     """Generate __init__.py for primitives/ml package."""
     content = '''"""Geosmith ML primitives (modular package).
 
@@ -306,11 +305,11 @@ This package maintains backward compatibility with the original flat import:
 # Import order matters - avoid circular imports
 
 '''
-    
+
     for module_name, funcs in sorted(module_assignments.items()):
         if not funcs:
             continue
-        
+
         func_names = sorted(set(f['name'] for f in funcs))
         content += f"# {module_name.replace('_', ' ').title()}\n"
         content += f"from geosmith.primitives.ml.{module_name} import (\n"
@@ -322,7 +321,7 @@ This package maintains backward compatibility with the original flat import:
                 continue
             content += f"    {name},\n"
         content += ")\n\n"
-    
+
     # Generate __all__
     all_names = []
     for funcs in module_assignments.values():
@@ -331,12 +330,13 @@ This package maintains backward compatibility with the original flat import:
             if not name.startswith("__") or name == "__init__":
                 if not name.startswith("_") or name == "_adjust_confusion_matrix_kernel":
                     all_names.append(name)
-    
+
     content += f"__all__ = {sorted(set(all_names))!r}\n"
-    
+
     return content
 
 
 if __name__ == "__main__":
     main()
+
 

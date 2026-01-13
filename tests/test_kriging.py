@@ -3,9 +3,9 @@
 import numpy as np
 import pytest
 
-from geosmith import PointSet, GeoIndex
+from geosmith import PointSet
 from geosmith.primitives.kriging import KrigingResult, OrdinaryKriging
-from geosmith.primitives.variogram import VariogramModel, fit_variogram_model
+from geosmith.primitives.variogram import VariogramModel
 
 
 class TestOrdinaryKriging:
@@ -60,4 +60,5 @@ class TestOrdinaryKriging:
 
         with pytest.raises(ValueError, match="not fitted"):
             kriging.predict(query_points)
+
 

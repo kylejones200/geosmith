@@ -2,7 +2,7 @@
 
 Pure geomechanics operations split into logical modules:
 - stress: Basic stress calculations
-- pressure: Pressure calculations  
+- pressure: Pressure calculations
 - failure: Failure criteria
 - fracture: Fracture orientation and permeability
 - inversion: Stress inversion from observations

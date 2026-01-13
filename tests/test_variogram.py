@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from geosmith import PointSet, GeoIndex
+from geosmith import PointSet
 from geosmith.primitives.variogram import (
     VariogramModel,
     compute_experimental_variogram,
@@ -141,4 +141,5 @@ class TestPredictVariogram:
         assert np.all(predicted >= 0)
         assert predicted[0] == model.nugget  # At distance 0, should be nugget
         assert predicted[-1] <= model.sill  # At large distance, should approach sill
+
 

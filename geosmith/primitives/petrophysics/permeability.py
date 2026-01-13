@@ -10,6 +10,7 @@ import numpy as np
 
 from geosmith.primitives.petrophysics._common import logger, njit
 
+
 def calculate_permeability_kozeny_carman(
     phi: Union[np.ndarray, float],
     sw: Optional[Union[np.ndarray, float]] = None,
@@ -32,7 +33,9 @@ def calculate_permeability_kozeny_carman(
         Permeability in millidarcies (mD).
 
     Example:
-        >>> from geosmith.primitives.petrophysics import calculate_permeability_kozeny_carman
+        >>> from geosmith.primitives.petrophysics import (
+        ...     calculate_permeability_kozeny_carman
+        ... )
         >>>
         >>> k = calculate_permeability_kozeny_carman(phi=0.25, sw=0.5)
         >>> print(f"Permeability: {k:.2f} mD")
@@ -50,11 +53,7 @@ def calculate_permeability_kozeny_carman(
     d_meters = grain_size_microns * 1e-6
     d_cm = d_meters * 100
 
-    k_cm2 = (
-        phi**3
-        * d_cm**2
-        / (180 * (1 - phi) ** 2 * tortuosity**2 * shape_factor)
-    )
+    k_cm2 = phi**3 * d_cm**2 / (180 * (1 - phi) ** 2 * tortuosity**2 * shape_factor)
 
     k_md = k_cm2 * 1.01325e8
 
@@ -104,14 +103,10 @@ def calculate_permeability_timur(
     sw = np.asarray(sw, dtype=float)
 
     if phi.size == 0 or sw.size == 0:
-        raise ValueError(
-            "Porosity and water saturation arrays must not be empty"
-        )
+        raise ValueError("Porosity and water saturation arrays must not be empty")
 
     if phi.size != sw.size:
-        raise ValueError(
-            "Porosity and water saturation arrays must have same length"
-        )
+        raise ValueError("Porosity and water saturation arrays must have same length")
 
     phi = np.clip(phi, 0.01, 0.99)
     sw = np.clip(sw, 0.01, 0.99)
@@ -143,7 +138,9 @@ def calculate_permeability_porosity_only(
         Permeability in millidarcies (mD).
 
     Example:
-        >>> from geosmith.primitives.petrophysics import calculate_permeability_porosity_only
+        >>> from geosmith.primitives.petrophysics import (
+        ...     calculate_permeability_porosity_only
+        ... )
         >>>
         >>> k = calculate_permeability_porosity_only(phi=0.25)
         >>> print(f"Permeability: {k:.2f} mD")
@@ -187,7 +184,9 @@ def calculate_permeability_wyllie_rose(
         Permeability in millidarcies (mD).
 
     Example:
-        >>> from geosmith.primitives.petrophysics import calculate_permeability_wyllie_rose
+        >>> from geosmith.primitives.petrophysics import (
+        ...     calculate_permeability_wyllie_rose
+        ... )
         >>>
         >>> k = calculate_permeability_wyllie_rose(phi=0.25, sw=0.5)
         >>> print(f"Permeability: {k:.2f} mD")
@@ -196,14 +195,10 @@ def calculate_permeability_wyllie_rose(
     sw = np.asarray(sw, dtype=float)
 
     if phi.size == 0 or sw.size == 0:
-        raise ValueError(
-            "Porosity and water saturation arrays must not be empty"
-        )
+        raise ValueError("Porosity and water saturation arrays must not be empty")
 
     if phi.size != sw.size:
-        raise ValueError(
-            "Porosity and water saturation arrays must have same length"
-        )
+        raise ValueError("Porosity and water saturation arrays must have same length")
 
     phi = np.clip(phi, 0.01, 0.99)
     sw = np.clip(sw, 0.01, 0.99)
@@ -240,7 +235,9 @@ def calculate_permeability_coates_dumanoir(
         Permeability in millidarcies (mD).
 
     Example:
-        >>> from geosmith.primitives.petrophysics import calculate_permeability_coates_dumanoir
+        >>> from geosmith.primitives.petrophysics import (
+        ...     calculate_permeability_coates_dumanoir
+        ... )
         >>>
         >>> k = calculate_permeability_coates_dumanoir(phi=0.25, sw=0.5)
         >>> print(f"Permeability: {k:.2f} mD")
@@ -249,22 +246,16 @@ def calculate_permeability_coates_dumanoir(
     sw = np.asarray(sw, dtype=float)
 
     if phi.size == 0 or sw.size == 0:
-        raise ValueError(
-            "Porosity and water saturation arrays must not be empty"
-        )
+        raise ValueError("Porosity and water saturation arrays must not be empty")
 
     if phi.size != sw.size:
-        raise ValueError(
-            "Porosity and water saturation arrays must have same length"
-        )
+        raise ValueError("Porosity and water saturation arrays must have same length")
 
     phi = np.clip(phi, 0.01, 0.99)
     sw = np.clip(sw, 0.01, 0.99)
 
     k_md = (
-        coefficient
-        * (phi**porosity_exponent)
-        * ((1 - sw) / sw) ** saturation_exponent
+        coefficient * (phi**porosity_exponent) * ((1 - sw) / sw) ** saturation_exponent
     )
 
     k_md = np.clip(k_md, 0.001, 1e6)

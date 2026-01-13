@@ -29,4 +29,3 @@ except ImportError:
             return func
 
         return decorator if not args else decorator(args[0])
-

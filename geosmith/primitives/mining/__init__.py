@@ -5,7 +5,8 @@ Ore modeling and forecasting operations split into logical modules:
 - forecasting: Ore grade forecasting (Kriging, GPR, XGBoost)
 
 Note: Block model operations are in tasks/blockmodeltask.py
-      Variogram/kriging/simulation are in primitives/variogram.py, kriging.py, simulation.py
+      Variogram/kriging/simulation are in primitives/variogram.py,
+      kriging.py, simulation.py
       Feature engineering is in primitives/features.py
 
 This package maintains backward compatibility with the original flat import:
@@ -36,4 +37,19 @@ from geosmith.primitives.mining.ore_modeling import (
     train_hybrid_model,
 )
 
-__all__ = ['HybridModelResults', 'HybridOreModel', 'analyze_uncertainty_calibration', 'compare_forecasting_methods', 'create_prediction_grid', 'create_spatial_folds', 'fit_variogram_for_forecasting', 'generate_synthetic_geochemical_data', 'ordinary_kriging_predict', 'predict_block_grades', 'prepare_spatial_features', 'train_gaussian_process', 'train_hybrid_model', 'train_xgboost']
+__all__ = [
+    "HybridModelResults",
+    "HybridOreModel",
+    "analyze_uncertainty_calibration",
+    "compare_forecasting_methods",
+    "create_prediction_grid",
+    "create_spatial_folds",
+    "fit_variogram_for_forecasting",
+    "generate_synthetic_geochemical_data",
+    "ordinary_kriging_predict",
+    "predict_block_grades",
+    "prepare_spatial_features",
+    "train_gaussian_process",
+    "train_hybrid_model",
+    "train_xgboost",
+]

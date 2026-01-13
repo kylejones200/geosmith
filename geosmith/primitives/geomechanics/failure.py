@@ -61,6 +61,7 @@ def mohr_coulomb_failure(
 
     return sigma1_fail, safety_factor
 
+
 def drucker_prager_failure(
     sigma1: Union[np.ndarray, float],
     sigma2: Union[np.ndarray, float],
@@ -101,19 +102,12 @@ def drucker_prager_failure(
 
     # Deviatoric stress
     J2 = (
-        (sigma1 - sigma2) ** 2
-        + (sigma2 - sigma3) ** 2
-        + (sigma3 - sigma1) ** 2
+        (sigma1 - sigma2) ** 2 + (sigma2 - sigma3) ** 2 + (sigma3 - sigma1) ** 2
     ) / 6.0
 
     # Drucker-Prager parameters
     alpha = np.sin(phi_rad) / np.sqrt(3.0 * (3.0 + np.sin(phi_rad) ** 2))
-    k = (
-        np.sqrt(3.0)
-        * cohesion
-        * np.cos(phi_rad)
-        / np.sqrt(3.0 + np.sin(phi_rad) ** 2)
-    )
+    k = np.sqrt(3.0) * cohesion * np.cos(phi_rad) / np.sqrt(3.0 + np.sin(phi_rad) ** 2)
 
     # Failure criterion: sqrt(J2) = alpha * I1 + k
     sqrt_J2_fail = alpha * I1 + k
@@ -123,6 +117,7 @@ def drucker_prager_failure(
     safety_factor = sqrt_J2_fail / sqrt_J2_actual
 
     return sqrt_J2_fail, safety_factor
+
 
 def hoek_brown_failure(
     sigma1: Union[np.ndarray, float],
@@ -169,4 +164,3 @@ def hoek_brown_failure(
     safety_factor = sigma1_fail / sigma1
 
     return sigma1_fail, safety_factor
-

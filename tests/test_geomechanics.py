@@ -70,3 +70,4 @@ class TestCalculateStressRatio:
         k = calculate_stress_ratio(shmin=40.0, sv=50.0)
         assert k == pytest.approx(0.8)
 
+

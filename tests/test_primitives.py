@@ -1,9 +1,8 @@
 """Tests for Layer 2 Primitives."""
 
 import numpy as np
-import pytest
 
-from geosmith.objects import PointSet, PolygonSet
+from geosmith.objects import LineSet, PointSet, PolygonSet, RasterGrid
 from geosmith.primitives.geometry import (
     bounding_box,
     line_length,
@@ -11,7 +10,6 @@ from geosmith.primitives.geometry import (
     polygon_area,
 )
 from geosmith.primitives.raster import grid_resample, zonal_reduce
-from geosmith.objects import LineSet, RasterGrid
 
 
 class TestGeometryPrimitives:
@@ -78,4 +76,5 @@ class TestRasterPrimitives:
         stats = zonal_reduce(raster, polygons, reducer="mean")
         assert len(stats) == 1
         assert 0 <= stats[0] <= 100
+
 

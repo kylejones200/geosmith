@@ -154,7 +154,8 @@ class ResqmlParser:
         Args:
             epc_path: Path to RESQML .epc file.
             property_name: Name of property to load.
-            property_kind: Kind of property (e.g., 'porosity', 'permeability', 'saturation').
+            property_kind: Kind of property (e.g., 'porosity',
+                'permeability', 'saturation').
 
         Returns:
             Dictionary with property data:
@@ -168,7 +169,10 @@ class ResqmlParser:
             >>>
             >>> parser = ResqmlParser()
             >>> porosity = parser.load_properties('model.epc', property_kind='porosity')
-            >>> print(f"Porosity range: {porosity['values'].min():.3f} - {porosity['values'].max():.3f}")
+            >>> print(
+            ...     f"Porosity range: {porosity['values'].min():.3f} - "
+            ...     f"{porosity['values'].max():.3f}"
+            ... )
         """
         if self.model is None:
             self.load_model(epc_path)
@@ -258,4 +262,3 @@ def read_resqml_properties(
     """
     parser = ResqmlParser()
     return parser.load_properties(epc_path, property_name, property_kind)
-

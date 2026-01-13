@@ -63,4 +63,3 @@ class PointSet:
             f"PointSet(n_points={n_points}, n_dims={n_dims}, "
             f"has_attributes={has_attrs}, has_index={has_index})"
         )
-

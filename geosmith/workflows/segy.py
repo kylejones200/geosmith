@@ -113,17 +113,14 @@ def read_segy_summary(path: str | Path) -> SegySummary:
     """
     if not SEGYIO_AVAILABLE:
         raise ImportError(
-            "segyio is required for SEG-Y support. "
-            "Install with: pip install segyio"
+            "segyio is required for SEG-Y support. " "Install with: pip install segyio"
         )
 
     path = Path(path)
     if not path.exists():
         raise FileNotFoundError(f"SEG-Y file not found: {path}")
 
-    with segyio.open(
-        str(path), mode="r", strict=False, ignore_geometry=True
-    ) as f:
+    with segyio.open(str(path), mode="r", strict=False, ignore_geometry=True) as f:
         n_traces = f.tracecount
         n_samples = f.samples.size
         dt = float(segyio.tools.dt(f))  # microseconds
@@ -175,17 +172,14 @@ def read_segy_traces(
     """
     if not SEGYIO_AVAILABLE:
         raise ImportError(
-            "segyio is required for SEG-Y support. "
-            "Install with: pip install segyio"
+            "segyio is required for SEG-Y support. " "Install with: pip install segyio"
         )
 
     path = Path(path)
     if not path.exists():
         raise FileNotFoundError(f"SEG-Y file not found: {path}")
 
-    with segyio.open(
-        str(path), mode="r", strict=False, ignore_geometry=True
-    ) as f:
+    with segyio.open(str(path), mode="r", strict=False, ignore_geometry=True) as f:
         if trace_indices is None:
             # Read all traces (up to max_traces)
             n_read = min(f.tracecount, max_traces)
@@ -204,4 +198,3 @@ def read_segy_traces(
         logger.info(f"Read {n_read} traces from SEG-Y file")
 
         return traces
-

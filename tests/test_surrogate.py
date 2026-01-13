@@ -8,18 +8,17 @@ import pytest
 
 from geosmith.objects.pointset import PointSet
 
-
 # Check if dependencies are available
 try:
-    import sklearn
-    from sklearn.ensemble import GradientBoostingRegressor
+    import sklearn  # noqa: F401
+    from sklearn.ensemble import GradientBoostingRegressor  # noqa: F401
 
     SKLEARN_AVAILABLE = True
 except ImportError:
     SKLEARN_AVAILABLE = False
 
 try:
-    import xgboost
+    import xgboost  # noqa: F401
 
     XGBOOST_AVAILABLE = True
 except ImportError:

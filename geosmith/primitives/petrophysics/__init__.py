@@ -1,7 +1,8 @@
 """Geosmith petrophysics (modular package).
 
 Pure petrophysics operations split into logical modules:
-- water_saturation: Water saturation calculations (Archie, Simandoux, Indonesia, Waxman-Smits)
+- water_saturation: Water saturation calculations (Archie, Simandoux,
+  Indonesia, Waxman-Smits)
 - permeability: Permeability calculations (Kozeny-Carman, Timur, Tixier, etc.)
 - rock_physics: Rock physics calculations (Gassmann, fluid properties, porosity)
 - avo: AVO (Amplitude vs Offset) attribute calculations

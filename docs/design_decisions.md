@@ -12,3 +12,4 @@ GeoSmith favors explicit workflows over magic convenience. Every operation state
 
 These decisions reduce surprises. They support correctness, auditability, and reuse across spatial analytics projects.
 
+

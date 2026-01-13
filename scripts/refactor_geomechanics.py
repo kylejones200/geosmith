@@ -4,11 +4,7 @@
 This script parses the backup file and extracts functions/classes into logical modules.
 """
 
-import ast
-import re
 from pathlib import Path
-from typing import Dict, List, Tuple
-
 
 # Module groupings based on function name patterns
 MODULE_GROUPS = {
@@ -112,22 +108,22 @@ MODULE_GROUPS = {
 
 def read_backup_file(backup_path: Path) -> str:
     """Read the backup geomechanics file."""
-    with open(backup_path, "r") as f:
+    with open(backup_path) as f:
         return f.read()
 
 
-def find_function_ranges(content: str) -> List[Tuple[str, int, int]]:
+def find_function_ranges(content: str) -> list[tuple[str, int, int]]:
     """Find all function/class definitions and their line ranges.
-    
+
     Returns list of (name, start_line, end_line) tuples.
     """
     lines = content.split("\n")
     functions = []
-    
+
     i = 0
     while i < len(lines):
         line = lines[i].strip()
-        
+
         # Check for function or class definition
         if line.startswith("def ") or line.startswith("class ") or line.startswith("@dataclass"):
             # Extract name
@@ -164,32 +160,32 @@ def find_function_ranges(content: str) -> List[Tuple[str, int, int]]:
                     current_line = lines[i]
                     current_stripped = current_line.strip()
                     current_indent = len(current_line) - len(current_line.lstrip())
-                    
+
                     # Track docstrings
                     if '"""' in current_line or "'''" in current_line:
                         in_docstring = not in_docstring
                         continue
-                    
+
                     # If we hit a line at same or lower indent (and not empty/comment/docstring continuation), we're done
                     if not in_docstring and current_stripped and not current_stripped.startswith("#"):
                         if current_indent <= indent_level:
                             break
-                
+
                 functions.append((name, start, i))
                 continue
         i += 1
-    
+
     return functions
 
 
 def assign_to_module(name: str) -> str:
     """Assign a function/class to a module based on its name."""
     name_lower = name.lower()
-    
+
     for module_name, config in MODULE_GROUPS.items():
         # Check patterns
         matches = any(pattern.lower() in name_lower for pattern in config["patterns"])
-        
+
         if matches:
             # Check exclusions
             if "exclude" in config:
@@ -197,11 +193,11 @@ def assign_to_module(name: str) -> str:
                 if excluded:
                     continue
             return module_name
-    
+
     # Default: assign to stress if it's a stress-related function
     if "stress" in name_lower or "shmax" in name_lower or "shmin" in name_lower:
         return "stress"
-    
+
     return "stress"  # Default fallback
 
 
@@ -227,7 +223,7 @@ from geosmith.primitives.geomechanics._common import (
 if TYPE_CHECKING:
     import pandas as pd
 """
-    
+
     # Add module-specific imports
     if module_name == "failure":
         pass  # No special imports
@@ -269,7 +265,7 @@ from dataclasses import dataclass
         common_imports += """
 from geosmith.primitives._numba_helpers import njit as _njit
 """
-    
+
     return f'''"""Geomechanics: {description}
 
 Pure geomechanics operations - {module_name} module.
@@ -283,26 +279,26 @@ Layer 2: Primitives - Pure operations.
 
 def create_module_file(
     module_name: str,
-    functions: List[Tuple[str, str]],
+    functions: list[tuple[str, str]],
     output_dir: Path,
 ) -> None:
     """Create a module file with extracted functions."""
     config = MODULE_GROUPS[module_name]
     file_path = output_dir / config["name"]
-    
+
     # Generate header
     content = get_module_header(module_name, config["description"])
     content += "\n\n"
-    
+
     # Add functions in order
     for name, code in functions:
         content += code
         content += "\n\n"
-    
+
     # Write file
     with open(file_path, "w") as f:
         f.write(content)
-    
+
     print(f"✓ Created {file_path} with {len(functions)} functions")
 
 
@@ -311,30 +307,30 @@ def main():
     base_dir = Path(__file__).parent.parent
     backup_file = base_dir / "geosmith/primitives/geomechanics.py.backup"
     output_dir = base_dir / "geosmith/primitives/geomechanics"
-    
+
     if not backup_file.exists():
         print(f"❌ Backup file not found: {backup_file}")
         return
-    
+
     output_dir.mkdir(exist_ok=True)
-    
+
     print("Reading backup file...")
     content = read_backup_file(backup_file)
-    
+
     print("Finding function definitions...")
     functions = find_function_ranges(content)
     print(f"Found {len(functions)} functions/classes")
-    
+
     # Group functions by module
-    module_functions: Dict[str, List[Tuple[str, str]]] = {mod: [] for mod in MODULE_GROUPS.keys()}
-    
+    module_functions: dict[str, list[tuple[str, str]]] = {mod: [] for mod in MODULE_GROUPS.keys()}
+
     print("\nGrouping functions by module:")
     for name, start, end in functions:
         module = assign_to_module(name)
         code = extract_function_code(content, start, end)
         module_functions[module].append((name, code))
         print(f"  {name:40s} → {module}.py")
-    
+
     # Create module files
     print("\nCreating module files:")
     for module_name, funcs in module_functions.items():
@@ -342,15 +338,16 @@ def main():
             create_module_file(module_name, funcs, output_dir)
         else:
             print(f"⚠ Skipping {module_name}.py (no functions assigned)")
-    
+
     print("\n✅ Refactoring complete!")
-    print(f"\nNext steps:")
+    print("\nNext steps:")
     print(f"1. Review the generated files in {output_dir}")
-    print(f"2. Fix any import issues (cross-module dependencies)")
-    print(f"3. Test imports: python -c 'from geosmith.primitives.geomechanics import *'")
-    print(f"4. Update geosmith/primitives/__init__.py if needed")
+    print("2. Fix any import issues (cross-module dependencies)")
+    print("3. Test imports: python -c 'from geosmith.primitives.geomechanics import *'")
+    print("4. Update geosmith/primitives/__init__.py if needed")
 
 
 if __name__ == "__main__":
     main()
+
 

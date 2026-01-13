@@ -49,7 +49,9 @@ def calculate_overburden_stress_parallel(
         List of overburden stress arrays (MPa), one per well.
 
     Example:
-        >>> from geosmith.primitives.geomechanics import calculate_overburden_stress_parallel
+        >>> from geosmith.primitives.geomechanics import (
+        ...     calculate_overburden_stress_parallel
+        ... )
         >>> import numpy as np
         >>>
         >>> # Process 10 wells in parallel
@@ -98,7 +100,8 @@ def process_well_array_parallel(
 
     Args:
         data_array: 2D array (n_wells x n_samples).
-        operation: Statistical operation - 'mean', 'median', 'std', 'min', 'max', default 'mean'.
+        operation: Statistical operation - 'mean', 'median', 'std', 'min',
+            'max', default 'mean'.
 
     Returns:
         1D array of results, one per well.
@@ -205,4 +208,3 @@ def get_parallel_info() -> dict[str, Union[bool, str, int]]:
         info["threading_layer"] = "sequential"
 
     return info
-

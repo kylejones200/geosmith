@@ -96,3 +96,4 @@ print("- When AnomSmith is available, spatial anomaly detection works seamlessly
 print("- AnomalyScores and SpatialAnomalyResult are compatible with AnomSmith")
 print("- Install AnomSmith: pip install geosmith[anomsmith]")
 
+

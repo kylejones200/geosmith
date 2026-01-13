@@ -1,7 +1,6 @@
 """Tests for Layer 3 Tasks."""
 
 import numpy as np
-import pytest
 
 from geosmith.objects import PointSet, PolygonSet
 from geosmith.tasks.featuretask import FeatureTask
@@ -51,4 +50,5 @@ class TestRasterTask:
         result = task.resample(raster, target_transform, (5, 5))
 
         assert result.data.shape == (5, 5)
+
 

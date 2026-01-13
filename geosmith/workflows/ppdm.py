@@ -194,7 +194,8 @@ class PpdmParser:
 
         Args:
             csv_file: Path to PPDM CSV file.
-            data_type: Data type ('well', 'production', 'business_associate'), default 'well'.
+            data_type: Data type ('well', 'production', 'business_associate'),
+                default 'well'.
 
         Returns:
             DataFrame with PPDM data, properly formatted and mapped.
@@ -215,9 +216,7 @@ class PpdmParser:
             if data_type == "production":
                 # For large production files, use chunking
                 chunk_size = 10000
-                chunks = pd.read_csv(
-                    csv_file, chunksize=chunk_size, low_memory=False
-                )
+                chunks = pd.read_csv(csv_file, chunksize=chunk_size, low_memory=False)
                 df = pd.concat(chunks, ignore_index=True)
             else:
                 df = pd.read_csv(csv_file, low_memory=False)
@@ -253,18 +252,14 @@ class PpdmParser:
         # Standardize UWI
         if "uwi" in processed_df.columns:
             processed_df["uwi"] = processed_df["uwi"].apply(
-                lambda x: self.data_model.standardize_uwi(str(x))
-                if pd.notna(x)
-                else ""
+                lambda x: self.data_model.standardize_uwi(str(x)) if pd.notna(x) else ""
             )
 
         # Convert coordinates to numeric
         coord_columns = ["surface_latitude", "surface_longitude"]
         for col in coord_columns:
             if col in processed_df.columns:
-                processed_df[col] = pd.to_numeric(
-                    processed_df[col], errors="coerce"
-                )
+                processed_df[col] = pd.to_numeric(processed_df[col], errors="coerce")
 
         # Clean well names
         if "well_name" in processed_df.columns:
@@ -303,9 +298,7 @@ class PpdmParser:
         volume_columns = ["daily_volume", "monthly_volume", "cumulative_volume"]
         for col in volume_columns:
             if col in processed_df.columns:
-                processed_df[col] = pd.to_numeric(
-                    processed_df[col], errors="coerce"
-                )
+                processed_df[col] = pd.to_numeric(processed_df[col], errors="coerce")
 
         # Standardize product types
         if "product_type" in processed_df.columns:
@@ -330,9 +323,7 @@ class PpdmParser:
 
         # Clean business associate names
         if "ba_name" in processed_df.columns:
-            processed_df["ba_name"] = (
-                processed_df["ba_name"].astype(str).str.strip()
-            )
+            processed_df["ba_name"] = processed_df["ba_name"].astype(str).str.strip()
 
         # Standardize BA types
         if "ba_type" in processed_df.columns:
@@ -351,16 +342,15 @@ class PpdmParser:
         return processed_df
 
 
-def read_ppdm_csv(
-    csv_file: Union[str, Path], data_type: str = "well"
-) -> pd.DataFrame:
+def read_ppdm_csv(csv_file: Union[str, Path], data_type: str = "well") -> pd.DataFrame:
     """Load PPDM CSV data with proper formatting.
 
     Convenience function for loading PPDM CSV files.
 
     Args:
         csv_file: Path to PPDM CSV file.
-        data_type: Data type ('well', 'production', 'business_associate'), default 'well'.
+        data_type: Data type ('well', 'production', 'business_associate'),
+            default 'well'.
 
     Returns:
         DataFrame with PPDM data.
@@ -373,4 +363,3 @@ def read_ppdm_csv(
     """
     parser = PpdmParser()
     return parser.load_ppdm_csv(csv_file, data_type)
-

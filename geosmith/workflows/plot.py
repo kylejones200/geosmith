@@ -25,6 +25,7 @@ def _is_plotsmith_available() -> bool:
     """
     try:
         import plotsmith  # noqa: F401
+
         return True
     except ImportError:
         return False
@@ -56,14 +57,10 @@ def plot_points(
     if use_plotsmith and _is_plotsmith_available():
         try:
             from plotsmith import plot_scatter
-            
+
             coords = points.coordinates[:, :2]
             if ax is None:
-                fig, ax = plot_scatter(
-                    coords[:, 0],
-                    coords[:, 1],
-                    **kwargs
-                )
+                fig, ax = plot_scatter(coords[:, 0], coords[:, 1], **kwargs)
             else:
                 ax.scatter(coords[:, 0], coords[:, 1], **kwargs)
             return ax
@@ -126,7 +123,9 @@ def plot_polygons(
         # Plot holes
         if holes:
             for hole in holes:
-                hole_poly = MPLPolygon(hole[:, :2], facecolor="white", edgecolor="black")
+                hole_poly = MPLPolygon(
+                    hole[:, :2], facecolor="white", edgecolor="black"
+                )
                 ax.add_patch(hole_poly)
 
     return ax
@@ -165,4 +164,3 @@ def plot_raster(
 
     ax.imshow(data, **kwargs)
     return ax
-

@@ -80,4 +80,3 @@ def buffer_polygons_with_geopandas(polygons: PolygonSet, distance: float) -> Pol
             rings.append([exterior] + holes)
 
     return PolygonSet(rings=rings, index=polygons.index)
-

@@ -79,7 +79,8 @@ class PermeabilityPredictor(BaseEstimator):
         """Initialize the permeability predictor.
 
         Args:
-            model_type: Type of model ('random_forest', 'gradient_boosting', 'ridge', 'lasso'), default 'random_forest'.
+            model_type: Type of model ('random_forest', 'gradient_boosting',
+                'ridge', 'lasso'), default 'random_forest'.
             test_size: Fraction of data to use for testing, default 0.2.
             random_state: Random seed for reproducibility, default 42.
             **model_params: Additional parameters passed to the model.
@@ -120,7 +121,9 @@ class PermeabilityPredictor(BaseEstimator):
             >>>
             >>> X = pd.DataFrame({'GR': [60, 80, 40], 'RHOB': [2.5, 2.3, 2.7]})
             >>> y = np.array([100, 50, 200])  # Permeability in mD
-            >>> predictor = PermeabilityPredictor(model_type='random_forest', test_size=0.0)
+            >>> predictor = PermeabilityPredictor(
+            ...     model_type='random_forest', test_size=0.0
+            ... )
             >>> predictor.fit(X, y)
             PermeabilityPredictor(...)
         """
@@ -226,7 +229,9 @@ class PermeabilityPredictor(BaseEstimator):
             >>>
             >>> X_train = pd.DataFrame({'GR': [60, 80, 40], 'RHOB': [2.5, 2.3, 2.7]})
             >>> y_train = np.array([100, 50, 200])
-            >>> predictor = PermeabilityPredictor(model_type='random_forest', test_size=0.0)
+            >>> predictor = PermeabilityPredictor(
+            ...     model_type='random_forest', test_size=0.0
+            ... )
             >>> predictor.fit(X_train, y_train)
             >>>
             >>> X_test = pd.DataFrame({'GR': [70], 'RHOB': [2.4]})
@@ -419,4 +424,3 @@ class PorosityPredictor(BaseEstimator):
 
         y_pred = self.predict(X)
         return float(r2_score(y, y_pred))
-

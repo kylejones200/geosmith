@@ -14,7 +14,7 @@ from geosmith.primitives.geomechanics import (
 
 # Optional scipy dependency for optimization method
 try:
-    from scipy.optimize import minimize
+    from scipy.optimize import minimize  # noqa: F401
 
     SCIPY_AVAILABLE = True
 except ImportError:
@@ -187,4 +187,5 @@ class TestInvertStressCombined:
             invert_stress_combined(
                 depth=2000.0, sv=50.0, pp=20.0, breakout_data=None, dif_data=None
             )
+
 

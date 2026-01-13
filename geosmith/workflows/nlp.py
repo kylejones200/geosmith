@@ -10,7 +10,11 @@ from typing import Dict, List, Optional, Union
 
 import pandas as pd
 
-from geosmith.tasks.nlptask import ChronostratNER, NERResult, extract_chronostrat_entities
+from geosmith.tasks.nlptask import (
+    ChronostratNER,
+    NERResult,
+    extract_chronostrat_entities,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +22,8 @@ logger = logging.getLogger(__name__)
 def load_entity_list(entity_file: Union[str, Path]) -> List[str]:
     """Load entity list from CSV file.
 
-    Expected format: CSV with 'Text,Type' header or simple text file with one entity per line.
+    Expected format: CSV with 'Text,Type' header or simple text file with one
+        entity per line.
 
     Args:
         entity_file: Path to entity list file (CSV or text).
@@ -76,7 +81,9 @@ def load_text_documents(
 
     Example:
         >>> from geosmith.workflows.nlp import load_text_documents
-        >>> texts = load_text_documents('bgs-geo-testing-data.txt', format='one_per_line')
+        >>> texts = load_text_documents(
+        ...     'bgs-geo-testing-data.txt', format='one_per_line'
+        ... )
         >>> print(f"Loaded {len(texts)} documents")
     """
     text_file = Path(text_file)
@@ -115,17 +122,21 @@ def extract_entities_from_file(
         confidence_threshold: Minimum confidence score (0-1).
 
     Returns:
-        DataFrame with columns: document_id, text, entity, label, start, end, confidence.
+        DataFrame with columns: document_id, text, entity, label, start, end,
+            confidence.
 
     Example:
         >>> from geosmith.workflows.nlp import extract_entities_from_file
-        >>> 
+        >>>
         >>> results = extract_entities_from_file(
         ...     'bgs-geo-testing-data.txt',
         ...     'bgs-geo-entity-list.txt',
         ...     output_file='results.csv'
         ... )
-        >>> print(f"Extracted {len(results)} entities from {results['document_id'].nunique()} documents")
+        >>> print(
+        ...     f"Extracted {len(results)} entities from "
+        ...     f"{results['document_id'].nunique()} documents"
+        ... )
     """
     logger.info(f"Starting entity extraction workflow")
     logger.info(f"Text file: {text_file}")
@@ -201,13 +212,13 @@ def train_custom_ner_model(
 
     Example:
         >>> from geosmith.workflows.nlp import train_custom_ner_model
-        >>> 
+        >>>
         >>> model = train_custom_ner_model(
         ...     'bgs-geo-training-data.txt',
         ...     'bgs-geo-entity-list.txt',
         ...     model_output_dir='./models'
         ... )
-        >>> 
+        >>>
         >>> # Use trained model
         >>> result = model.predict("Sedimentary rocks of Silurian age occur.")
         >>> print(f"Found: {[e.text for e in result.entities]}")
@@ -254,4 +265,3 @@ def train_custom_ner_model(
     logger.info("Model training complete")
 
     return ner
-

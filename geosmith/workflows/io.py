@@ -47,7 +47,12 @@ def read_vector(
         coords = np.array([(g.x, g.y) for g in gdf.geometry])
         index = GeoIndex(
             crs=crs or str(gdf.crs) if gdf.crs else None,
-            bounds=(gdf.total_bounds[0], gdf.total_bounds[1], gdf.total_bounds[2], gdf.total_bounds[3]),
+            bounds=(
+                gdf.total_bounds[0],
+                gdf.total_bounds[1],
+                gdf.total_bounds[2],
+                gdf.total_bounds[3],
+            ),
         )
         return PointSet(coordinates=coords, index=index)
     elif geom_type in ("Polygon", "MultiPolygon"):
@@ -64,7 +69,12 @@ def read_vector(
                 rings.append([exterior])
         index = GeoIndex(
             crs=crs or str(gdf.crs) if gdf.crs else None,
-            bounds=(gdf.total_bounds[0], gdf.total_bounds[1], gdf.total_bounds[2], gdf.total_bounds[3]),
+            bounds=(
+                gdf.total_bounds[0],
+                gdf.total_bounds[1],
+                gdf.total_bounds[2],
+                gdf.total_bounds[3],
+            ),
         )
         return PolygonSet(rings=rings, index=index)
     else:
@@ -87,7 +97,12 @@ def read_vector(
         data["geometry"] = geom_objects
         index = GeoIndex(
             crs=crs or str(gdf.crs) if gdf.crs else None,
-            bounds=(gdf.total_bounds[0], gdf.total_bounds[1], gdf.total_bounds[2], gdf.total_bounds[3]),
+            bounds=(
+                gdf.total_bounds[0],
+                gdf.total_bounds[1],
+                gdf.total_bounds[2],
+                gdf.total_bounds[3],
+            ),
         )
         return GeoTable(data=data, geometry_column="geometry", index=index)
 
@@ -118,7 +133,9 @@ def write_vector(
     # Convert to geopandas
     if isinstance(data, PointSet):
         geoms = [Point(coord) for coord in data.coordinates]
-        gdf = gpd.GeoDataFrame(geometry=geoms, crs=data.index.crs if data.index else None)
+        gdf = gpd.GeoDataFrame(
+            geometry=geoms, crs=data.index.crs if data.index else None
+        )
     elif isinstance(data, PolygonSet):
         geoms = []
         for polygon_rings in data.rings:
@@ -127,7 +144,9 @@ def write_vector(
             exterior = polygon_rings[0]
             holes = polygon_rings[1:] if len(polygon_rings) > 1 else None
             geoms.append(Polygon(exterior, holes=holes))
-        gdf = gpd.GeoDataFrame(geometry=geoms, crs=data.index.crs if data.index else None)
+        gdf = gpd.GeoDataFrame(
+            geometry=geoms, crs=data.index.crs if data.index else None
+        )
     elif isinstance(data, GeoTable):
         # Convert geometry column
         geoms = []
@@ -153,9 +172,7 @@ def write_vector(
     gdf.to_file(str(path), **kwargs)
 
 
-def read_raster(
-    path: Union[str, Path], band: Optional[int] = None
-) -> RasterGrid:
+def read_raster(path: Union[str, Path], band: Optional[int] = None) -> RasterGrid:
     """Read raster data from file.
 
     Args:
@@ -197,7 +214,9 @@ def read_raster(
         # Get band names if available
         band_names = None
         if hasattr(src, "descriptions") and src.descriptions:
-            band_names = [desc or f"band_{i}" for i, desc in enumerate(src.descriptions)]
+            band_names = [
+                desc or f"band_{i}" for i, desc in enumerate(src.descriptions)
+            ]
 
         index = GeoIndex(
             crs=str(crs) if crs else None,
@@ -250,6 +269,7 @@ def write_raster(
     if raster.index and raster.index.crs:
         try:
             import pyproj
+
             crs = pyproj.CRS.from_string(raster.index.crs)
         except Exception:
             crs = raster.index.crs
@@ -268,7 +288,6 @@ def write_raster(
         **kwargs,
     ) as dst:
         dst.write(data)
-
 
 
 def load_csv_from_string(
@@ -310,4 +329,3 @@ def load_csv_from_string(
         return pd.read_csv(buffer, encoding=encoding)
     # pandas will infer encoding
     return pd.read_csv(buffer)
-

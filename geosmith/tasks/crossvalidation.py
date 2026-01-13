@@ -13,10 +13,10 @@ try:
         SpatialCrossValidator,
         WellBasedKFold,
     )
-    
+
     # Alias SpatialCrossValidator as SpatialKFold for backward compatibility
     SpatialKFold = SpatialCrossValidator
-    
+
     SKLEARN_AVAILABLE = True
 except ImportError:
     SKLEARN_AVAILABLE = False

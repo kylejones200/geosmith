@@ -86,4 +86,3 @@ class BaseRasterModel(BaseEstimator):
     def predict(self, *args: Any, **kwargs: Any) -> Any:
         """Make predictions."""
         raise NotImplementedError("Subclasses must implement predict")
-

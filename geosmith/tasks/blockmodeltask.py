@@ -50,8 +50,13 @@ def create_block_model_grid(
         >>> import numpy as np
         >>>
         >>> coords = np.random.rand(100, 3) * 1000
-        >>> grid, info = create_block_model_grid(coords, block_size_xy=25, block_size_z=10)
-        >>> print(f"Grid: {info['nx']} × {info['ny']} × {info['nz']} = {info['n_blocks']:,} blocks")
+        >>> grid, info = create_block_model_grid(
+        ...     coords, block_size_xy=25, block_size_z=10
+        ... )
+        >>> print(
+        ...     f"Grid: {info['nx']} × {info['ny']} × {info['nz']} = "
+        ...     f"{info['n_blocks']:,} blocks"
+        ... )
     """
     coords = np.asarray(coords, dtype=np.float64)
 
@@ -116,9 +121,7 @@ def create_block_model_grid(
         "block_size_z": block_size_z,
     }
 
-    logger.info(
-        f"Created block model grid: {nx} × {ny} × {nz} = {n_blocks:,} blocks"
-    )
+    logger.info(f"Created block model grid: {nx} × {ny} × {nz} = {n_blocks:,} blocks")
 
     return grid_coords, grid_info
 
@@ -140,7 +143,8 @@ class BlockModelTask:
         Args:
             block_size_xy: Block size in X and Y directions (meters), default 25.0.
             block_size_z: Block size in Z direction (meters), default 10.0.
-            quantile_padding: Padding as quantile (0-1) for bounds calculation, default 0.05.
+            quantile_padding: Padding as quantile (0-1) for bounds calculation,
+                default 0.05.
         """
         self.block_size_xy = block_size_xy
         self.block_size_z = block_size_z
@@ -167,4 +171,3 @@ class BlockModelTask:
             bounds=bounds,
             quantile_padding=self.quantile_padding,
         )
-

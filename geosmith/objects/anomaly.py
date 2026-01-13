@@ -70,6 +70,7 @@ class AnomalyScores:
         """
         try:
             from anomsmith.objects import AnomalyScores as ASAnomalyScores
+
             return ASAnomalyScores(
                 scores=self.scores,
                 data=self.points.coordinates,
@@ -129,9 +130,7 @@ class SpatialAnomalyResult:
     def __post_init__(self) -> None:
         """Validate SpatialAnomalyResult parameters."""
         if not isinstance(self.scores, AnomalyScores):
-            raise ValueError(
-                f"scores must be AnomalyScores, got {type(self.scores)}"
-            )
+            raise ValueError(f"scores must be AnomalyScores, got {type(self.scores)}")
 
         if self.spatial_features is not None:
             if not isinstance(self.spatial_features, pd.DataFrame):
@@ -142,7 +141,8 @@ class SpatialAnomalyResult:
             if len(self.spatial_features) != len(self.scores.points.coordinates):
                 raise ValueError(
                     f"spatial_features length ({len(self.spatial_features)}) "
-                    f"must match number of points ({len(self.scores.points.coordinates)})"
+                    f"must match number of points "
+                    f"({len(self.scores.points.coordinates)})"
                 )
 
     def to_anomsmith(self):
@@ -171,4 +171,3 @@ class SpatialAnomalyResult:
             f"SpatialAnomalyResult(scores={self.scores}, "
             f"has_features={has_features}, has_metadata={has_metadata})"
         )
-

@@ -62,9 +62,7 @@ class KrigingResult:
 
 
 @njit(cache=True, fastmath=True)
-def _compute_distances_fast(
-    point: np.ndarray, coordinates: np.ndarray
-) -> np.ndarray:
+def _compute_distances_fast(point: np.ndarray, coordinates: np.ndarray) -> np.ndarray:
     """Numba-accelerated Euclidean distance computation.
 
     5-10x faster than scipy.spatial.distance.cdist for single point queries.
@@ -116,9 +114,7 @@ class OrdinaryKriging(BaseSpatialModel):
         self.tags["supports_vector"] = True
         self.tags["requires_projected_crs"] = False
 
-    def fit(
-        self, points: PointSet, values: np.ndarray
-    ) -> "OrdinaryKriging":
+    def fit(self, points: PointSet, values: np.ndarray) -> "OrdinaryKriging":
         """Fit kriging system to training data.
 
         Args:
@@ -140,9 +136,7 @@ class OrdinaryKriging(BaseSpatialModel):
             )
 
         if len(values) < 3:
-            raise ValueError(
-                f"Need at least 3 samples for kriging, got {len(values)}"
-            )
+            raise ValueError(f"Need at least 3 samples for kriging, got {len(values)}")
 
         self.coordinates = coordinates
         self.values = values
@@ -152,7 +146,8 @@ class OrdinaryKriging(BaseSpatialModel):
         # For a variogram γ(h), covariance C(h) = sill - γ(h)
         if not SCIPY_AVAILABLE:
             raise ImportError(
-                "scipy is required for kriging. Install with: pip install geosmith[primitives] or pip install scipy"
+                "scipy is required for kriging. Install with: "
+                "pip install geosmith[primitives] or pip install scipy"
             )
         distances = cdist(coordinates, coordinates)
         gamma_matrix = predict_variogram(self.variogram_model, distances)
@@ -220,7 +215,8 @@ class OrdinaryKriging(BaseSpatialModel):
             else:
                 if not SCIPY_AVAILABLE:
                     raise ImportError(
-                        "scipy is required for kriging. Install with: pip install geosmith[primitives] or pip install scipy"
+                        "scipy is required for kriging. Install with: "
+                "pip install geosmith[primitives] or pip install scipy"
                     )
                 distances = cdist(
                     self.coordinates, target.reshape(1, -1)  # type: ignore
@@ -244,9 +240,7 @@ class OrdinaryKriging(BaseSpatialModel):
 
             # Kriging variance: C(0) - w'k - μ
             if return_variance:
-                C_0 = (
-                    self.variogram_model.sill - self.variogram_model.nugget
-                )
+                C_0 = self.variogram_model.sill - self.variogram_model.nugget
                 variances[i] = C_0 - np.dot(weights, k) - lagrange
                 variances[i] = max(variances[i], 0.0)  # Ensure non-negative
 
@@ -256,4 +250,3 @@ class OrdinaryKriging(BaseSpatialModel):
             weights=None,  # Could store if needed
             lagrange_multiplier=None,
         )
-

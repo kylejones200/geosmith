@@ -64,7 +64,9 @@ class FeatureTask:
                     all_rings.extend(poly.rings)
                 geometry = PolygonSet(rings=all_rings, index=geometry.index)
             else:
-                raise ValueError(f"Unsupported geometry type in GeoTable: {type(geoms[0])}")
+                raise ValueError(
+                    f"Unsupported geometry type in GeoTable: {type(geoms[0])}"
+                )
 
         # Simple buffer implementation (would use shapely in production)
         if isinstance(geometry, PointSet):
@@ -78,6 +80,7 @@ class FeatureTask:
         """Buffer points by creating circles."""
         try:
             from geosmith.tasks._geopandas_adapter import buffer_with_geopandas
+
             return buffer_with_geopandas(points, distance)
         except ImportError:
             # Fallback: create square buffers
@@ -85,13 +88,15 @@ class FeatureTask:
             rings = []
             for coord in points.coordinates:
                 x, y = coord[0], coord[1]
-                ring = np.array([
-                    [x - distance, y - distance],
-                    [x + distance, y - distance],
-                    [x + distance, y + distance],
-                    [x - distance, y + distance],
-                    [x - distance, y - distance],  # Close ring
-                ])
+                ring = np.array(
+                    [
+                        [x - distance, y - distance],
+                        [x + distance, y - distance],
+                        [x + distance, y + distance],
+                        [x - distance, y + distance],
+                        [x - distance, y - distance],  # Close ring
+                    ]
+                )
                 rings.append([ring])
             return PolygonSet(rings=rings, index=points.index)
 
@@ -99,6 +104,7 @@ class FeatureTask:
         """Buffer polygons."""
         try:
             from geosmith.tasks._geopandas_adapter import buffer_polygons_with_geopandas
+
             return buffer_polygons_with_geopandas(polygons, distance)
         except ImportError:
             # Fallback: expand bounding boxes
@@ -144,13 +150,17 @@ class FeatureTask:
                 mask = point_in_polygon(left_obj, right_obj)
                 # Create result DataFrame
                 left_indices, right_indices = np.where(mask)
-                result = pd.DataFrame({
-                    "left_idx": left_indices,
-                    "right_idx": right_indices,
-                })
+                result = pd.DataFrame(
+                    {
+                        "left_idx": left_indices,
+                        "right_idx": right_indices,
+                    }
+                )
                 return result
             else:
-                raise ValueError(f"Unsupported join combination: {type(left_obj)}, {type(right_obj)}")
+                raise ValueError(
+                    f"Unsupported join combination: {type(left_obj)}, {type(right_obj)}"
+                )
         else:
             raise ValueError(f"Unsupported predicate: {predicate}")
 
@@ -220,5 +230,7 @@ class FeatureTask:
         elif isinstance(geometry, PointSet):
             return geometry
         else:
-            raise ValueError(f"Input must be PointSet or GeoTable with PointSet, got {type(geometry)}")
-
+            raise ValueError(
+                f"Input must be PointSet or GeoTable with PointSet, "
+                f"got {type(geometry)}"
+            )

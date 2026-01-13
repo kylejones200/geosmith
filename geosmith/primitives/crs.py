@@ -43,8 +43,7 @@ def standardize_crs(crs: Union[str, int, "CRS"]) -> "CRS":
     """
     if not PYPROJ_AVAILABLE:
         raise ImportError(
-            "pyproj is required for CRS support. "
-            "Install with: pip install pyproj"
+            "pyproj is required for CRS support. " "Install with: pip install pyproj"
         )
 
     if isinstance(crs, CRS):  # type: ignore
@@ -101,9 +100,7 @@ def transform_coordinates(
     source_crs_obj = standardize_crs(source_crs)
     target_crs_obj = standardize_crs(target_crs)
 
-    transformer = Transformer.from_crs(
-        source_crs_obj, target_crs_obj, always_xy=True
-    )
+    transformer = Transformer.from_crs(source_crs_obj, target_crs_obj, always_xy=True)
 
     # Convert to numpy arrays
     x_arr = np.asarray(x)
@@ -207,4 +204,3 @@ def get_common_crs() -> dict[str, int]:
         "NAD27": 4267,
         "Web Mercator": 3857,
     }
-

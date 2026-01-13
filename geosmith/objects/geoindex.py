@@ -36,5 +36,7 @@ class GeoIndex:
     def __repr__(self) -> str:
         """String representation."""
         crs_str = self.crs if self.crs else "None"
-        return f"GeoIndex(crs={crs_str}, bounds={self.bounds}, axis_order={self.axis_order})"
-
+        return (
+            f"GeoIndex(crs={crs_str}, bounds={self.bounds}, "
+            f"axis_order={self.axis_order})"
+        )

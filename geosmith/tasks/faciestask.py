@@ -184,7 +184,7 @@ class FaciesTask:
             yhat_te = pipe.predict(Xte)
             report = classification_report(yte, yhat_te)
             logger.info(f"Trained {model_name} with test_size={test_size}")
-            
+
             # For final predictions, refit on full dataset to avoid using model
             # trained only on subset (prevents confusion about predictions on test data)
             pipe.fit(X, y)
@@ -217,4 +217,3 @@ class FaciesTask:
             model_name=model_name,
             report=report,
         )
-

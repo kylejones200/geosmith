@@ -10,3 +10,4 @@ GeoSmith does not aim to replace full GIS platforms. It provides a clean, reprod
 
 Start with the getting started guide. It shows a complete path from raw geometry to computed spatial features.
 
+

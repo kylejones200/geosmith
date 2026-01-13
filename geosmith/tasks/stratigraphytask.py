@@ -245,4 +245,3 @@ class StratigraphyTask:
         logger.info(f"Detected {len(results)} formation tops")
 
         return results
-

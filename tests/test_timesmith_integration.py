@@ -5,10 +5,8 @@ Tests that GeoSmith correctly uses timesmith.typing as the single source of trut
 
 import numpy as np
 import pandas as pd
-import pytest
 
 # Import from timesmith.typing (single source of truth)
-from timesmith.typing import PanelLike, SeriesLike, TableLike
 from timesmith.typing.validators import (
     assert_panel_like,
     assert_series_like,
@@ -97,7 +95,7 @@ class TestTimeSmithIntegration:
     def test_no_circular_imports(self):
         """Test that there are no circular imports."""
         # This test passes if imports succeed
-        from geosmith import PointSet, SeriesLike, PanelLike, TableLike
+        from geosmith import PanelLike, PointSet, SeriesLike, TableLike
 
         assert PointSet is not None
         assert SeriesLike is not None

@@ -41,9 +41,7 @@ class WitsmlParser:
             )
         self.namespaces = WITSML_NS
 
-    def _get_element_text(
-        self, element: "ET.Element", xpath: str
-    ) -> Optional[str]:
+    def _get_element_text(self, element: "ET.Element", xpath: str) -> Optional[str]:
         """Safely extract text from XML element using xpath."""
         found = element.find(xpath, self.namespaces)
         return found.text if found is not None else None
@@ -107,13 +105,9 @@ class WitsmlParser:
                 "county": self._get_element_text(root, ".//witsml:County"),
                 "operator": self._get_element_text(root, ".//witsml:Operator"),
                 "status_well": self._get_element_text(root, ".//witsml:StatusWell"),
-                "purpose_well": self._get_element_text(
-                    root, ".//witsml:PurposeWell"
-                ),
+                "purpose_well": self._get_element_text(root, ".//witsml:PurposeWell"),
                 "spud_date": self._get_element_text(root, ".//witsml:DTimSpud"),
-                "license_number": self._get_element_text(
-                    root, ".//witsml:NumLicense"
-                ),
+                "license_number": self._get_element_text(root, ".//witsml:NumLicense"),
                 "api_number": self._get_element_text(root, ".//witsml:NumGovt"),
                 "surface_location": self._extract_location_data(root, "Surface"),
                 "bottom_hole_location": self._extract_location_data(root, "BottomHole"),
@@ -122,9 +116,7 @@ class WitsmlParser:
             return well_data
 
         except Exception as e:
-            raise Exception(
-                f"Error parsing WITSML Well file {xml_file}: {str(e)}"
-            )
+            raise Exception(f"Error parsing WITSML Well file {xml_file}: {str(e)}")
 
     def parse_wellbore_data(self, xml_file: Union[str, Path]) -> Dict[str, Any]:
         """Parse Wellbore information from WITSML XML.
@@ -163,9 +155,7 @@ class WitsmlParser:
                 "purpose_wellbore": self._get_element_text(
                     root, ".//witsml:PurposeWellbore"
                 ),
-                "type_wellbore": self._get_element_text(
-                    root, ".//witsml:TypeWellbore"
-                ),
+                "type_wellbore": self._get_element_text(root, ".//witsml:TypeWellbore"),
                 "shape": self._get_element_text(root, ".//witsml:Shape"),
                 "dtime_kick_off": self._get_element_text(
                     root, ".//witsml:DTimeKickOff"
@@ -193,9 +183,7 @@ class WitsmlParser:
             return wellbore_data
 
         except Exception as e:
-            raise Exception(
-                f"Error parsing WITSML Wellbore file {xml_file}: {str(e)}"
-            )
+            raise Exception(f"Error parsing WITSML Wellbore file {xml_file}: {str(e)}")
 
     def parse_log_data(self, xml_file: Union[str, Path]) -> pd.DataFrame:
         """Parse Log data from WITSML XML and return pandas DataFrame.
@@ -213,7 +201,10 @@ class WitsmlParser:
             >>> parser = WitsmlParser()
             >>> log_df = parser.parse_log_data('log.xml')
             >>> print(f"Log channels: {list(log_df.columns)}")
-            >>> print(f"Log depth range: {log_df.index.min():.1f} - {log_df.index.max():.1f} m")
+            >>> print(
+            ...     f"Log depth range: {log_df.index.min():.1f} - "
+            ...     f"{log_df.index.max():.1f} m"
+            ... )
         """
         xml_file = Path(xml_file)
         if not xml_file.exists():
@@ -251,9 +242,7 @@ class WitsmlParser:
             for channel in channel_elements:
                 channel_info = {
                     "mnemonic": self._get_element_text(channel, ".//witsml:Mnemonic"),
-                    "unit": self._get_element_attr(
-                        channel, ".//witsml:Index", "uom"
-                    )
+                    "unit": self._get_element_attr(channel, ".//witsml:Index", "uom")
                     or self._get_element_attr(channel, ".//witsml:Value", "uom"),
                     "channel_class": self._get_element_text(
                         channel, ".//witsml:ChannelClass"
@@ -309,9 +298,7 @@ class WitsmlParser:
                 return pd.DataFrame()
 
         except Exception as e:
-            raise Exception(
-                f"Error parsing WITSML Log file {xml_file}: {str(e)}"
-            )
+            raise Exception(f"Error parsing WITSML Log file {xml_file}: {str(e)}")
 
     def parse_trajectory_data(self, xml_file: Union[str, Path]) -> pd.DataFrame:
         """Parse Trajectory data from WITSML XML.
@@ -329,7 +316,10 @@ class WitsmlParser:
             >>> parser = WitsmlParser()
             >>> traj_df = parser.parse_trajectory_data('trajectory.xml')
             >>> print(f"Trajectory stations: {len(traj_df)}")
-            >>> print(f"MD range: {traj_df['md'].min():.1f} - {traj_df['md'].max():.1f} m")
+            >>> print(
+            ...     f"MD range: {traj_df['md'].min():.1f} - "
+            ...     f"{traj_df['md'].max():.1f} m"
+            ... )
         """
         xml_file = Path(xml_file)
         if not xml_file.exists():
@@ -408,9 +398,7 @@ class WitsmlParser:
         self, root: "ET.Element", location_type: str
     ) -> Dict[str, Any]:
         """Extract location data (surface or bottom hole)."""
-        location_path = (
-            f".//witsml:WellLocation/witsml:{location_type}Location"
-        )
+        location_path = f".//witsml:WellLocation/witsml:{location_type}Location"
         location_element = root.find(location_path, self.namespaces)
 
         if location_element is None:
@@ -502,4 +490,3 @@ def read_witsml_trajectory(xml_file: Union[str, Path]) -> pd.DataFrame:
     """
     parser = WitsmlParser()
     return parser.parse_trajectory_data(xml_file)
-

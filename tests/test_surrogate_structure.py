@@ -5,7 +5,6 @@ scikit-learn or xgboost to be installed.
 """
 
 import ast
-import sys
 from pathlib import Path
 
 
@@ -70,7 +69,11 @@ def test_surrogate_task_structure():
 def test_surrogate_imports():
     """Test that surrogate module can be imported (if dependencies available)."""
     try:
-        from geosmith.primitives.surrogate import SurrogateModel, SurrogateMetrics, train_simulation_emulator
+        from geosmith.primitives.surrogate import (
+            SurrogateMetrics,  # noqa: F401
+            SurrogateModel,  # noqa: F401
+            train_simulation_emulator,  # noqa: F401
+        )
 
         print("✅ Surrogate module imports successfully (dependencies available)")
         return True
@@ -83,7 +86,7 @@ def test_surrogate_imports():
 def test_surrogate_task_imports():
     """Test that surrogate task can be imported (if dependencies available)."""
     try:
-        from geosmith.tasks.surrogatetask import SurrogateTask
+        from geosmith.tasks.surrogatetask import SurrogateTask  # noqa: F401
 
         print("✅ SurrogateTask imports successfully (dependencies available)")
         return True
@@ -119,13 +122,13 @@ def test_surrogate_inheritance():
     # Check for BaseSpatialModel import
     found_import = False
     found_inheritance = False
-    
+
     for i, line in enumerate(lines):
         if "BaseSpatialModel" in line and "import" in line:
             found_import = True
         if "class SurrogateModel" in line and "BaseSpatialModel" in line:
             found_inheritance = True
-    
+
     assert found_import, "BaseSpatialModel not imported"
     assert found_inheritance, "SurrogateModel does not inherit from BaseSpatialModel"
 

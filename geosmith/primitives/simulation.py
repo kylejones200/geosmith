@@ -163,7 +163,8 @@ def compute_exceedance_probability(
 ) -> np.ndarray:
     """Compute exceedance probability from SGS realizations.
 
-    Exceedance probability = P(Z > threshold) = fraction of realizations above threshold.
+    Exceedance probability = P(Z > threshold) = fraction of realizations
+    above threshold.
 
     Args:
         realizations: Array of shape (n_realizations, n_points) from SGS.
@@ -234,7 +235,6 @@ def compute_simulation_statistics(
     }
 
 
-
 def log_transform(values: np.ndarray, add_one: bool = True) -> np.ndarray:
     """Log transform values (optionally adding 1 to avoid log(0)).
 
@@ -285,4 +285,3 @@ def exp_transform(log_values: np.ndarray, subtract_one: bool = True) -> np.ndarr
         return np.expm1(log_values)
     else:
         return np.exp(log_values)
-

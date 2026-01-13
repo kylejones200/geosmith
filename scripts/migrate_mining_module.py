@@ -10,8 +10,6 @@ Note: block_model.py, drillhole.py, features.py, geostatistics.py, interpolation
 
 import ast
 from pathlib import Path
-from typing import Dict, List, Tuple
-from collections import defaultdict
 
 GEOSUITE_MINING = Path("/Users/kylejonespatricia/geosuite/geosuite/mining")
 GEOSMITH_PRIMITIVES = Path("geosmith/primitives")
@@ -35,13 +33,13 @@ FILE_MAPPING = {
 }
 
 
-def extract_top_level_functions(source_file: Path) -> List[Dict]:
+def extract_top_level_functions(source_file: Path) -> list[dict]:
     """Extract only top-level functions and classes from a Python file."""
     try:
         content = source_file.read_text()
         tree = ast.parse(content)
         source_lines = content.splitlines()
-        
+
         functions = []
         for node in ast.walk(tree):
             if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
@@ -49,18 +47,18 @@ def extract_top_level_functions(source_file: Path) -> List[Dict]:
                 parent = getattr(node, 'parent', None)
                 if parent and isinstance(parent, (ast.FunctionDef, ast.ClassDef)):
                     continue  # Skip nested definitions
-                
+
                 # Assign parent for nested detection
                 for child in ast.iter_child_nodes(node):
                     child.parent = node
-                
+
                 start_line = node.lineno - 1
                 if node.decorator_list:
                     start_line = node.decorator_list[0].lineno - 1
                 end_line = node.end_lineno if hasattr(node, 'end_lineno') else start_line + 50
-                
+
                 func_code = "\n".join(source_lines[start_line:end_line])
-                
+
                 # Check for plotting/geopandas (violates Layer 2)
                 code_lower = func_code.lower()
                 has_plotting = any(
@@ -68,7 +66,7 @@ def extract_top_level_functions(source_file: Path) -> List[Dict]:
                     for keyword in ["plt.", "matplotlib", "figure(", "signalplot", "plot("]
                 ) and "def plot_" in func_code.lower()
                 has_geopandas = "geopandas" in code_lower or "gpd." in code_lower or "gdf" in code_lower.lower()
-                
+
                 functions.append({
                     "name": node.name,
                     "type": "class" if isinstance(node, ast.ClassDef) else "function",
@@ -78,7 +76,7 @@ def extract_top_level_functions(source_file: Path) -> List[Dict]:
                     "has_plotting": has_plotting,
                     "has_geopandas": has_geopandas,
                 })
-        
+
         return functions
     except Exception as e:
         print(f"⚠ Error parsing {source_file}: {e}")
@@ -90,12 +88,12 @@ def clean_imports_for_primitives(code: str, source_file: str) -> str:
     lines = code.splitlines()
     cleaned = []
     skip_imports = False
-    
+
     for i, line in enumerate(lines):
         # Skip plotting imports
         if any(pattern in line for pattern in ["import matplotlib", "import plt", "import signalplot", "from matplotlib"]):
             continue
-        
+
         # Keep geopandas imports but wrap in try/except (for forecasting.py)
         if "import geopandas" in line or "from geopandas" in line:
             # Replace with optional import pattern
@@ -106,7 +104,7 @@ def clean_imports_for_primitives(code: str, source_file: str) -> str:
             cleaned.append("    GEOPANDAS_AVAILABLE = False")
             cleaned.append("    gpd = None  # type: ignore")
             continue
-        
+
         # Update relative imports to absolute
         if "from .interpolation" in line:
             cleaned.append("from geosmith.primitives.interpolation import idw_interpolate, compute_idw_residuals")
@@ -118,9 +116,9 @@ def clean_imports_for_primitives(code: str, source_file: str) -> str:
             # These are already migrated to variogram, kriging, simulation
             cleaned.append("# Variogram/kriging already migrated to primitives.variogram, primitives.kriging, primitives.simulation")
             continue
-        
+
         cleaned.append(line)
-    
+
     return "\n".join(cleaned)
 
 
@@ -213,67 +211,67 @@ def main():
     if not GEOSUITE_MINING.exists():
         print(f"❌ GeoSuite mining directory not found: {GEOSUITE_MINING}")
         return
-    
+
     # Create directory
     mining_dir = GEOSMITH_PRIMITIVES / "mining"
     mining_dir.mkdir(exist_ok=True)
-    
+
     modules_to_migrate = {}
-    
+
     # Process each source file
     for source_file in sorted(GEOSUITE_MINING.glob("*.py")):
         if source_file.name == "__init__.py":
             continue
-        
+
         mapping = FILE_MAPPING.get(source_file.name, None)
         if mapping == "skip":
             print(f"⏭ Skipping {source_file.name} (already migrated)")
             continue
-        
+
         if mapping is None:
             print(f"⚠ No mapping for {source_file.name}, skipping")
             continue
-        
+
         print(f"📄 Processing {source_file.name}...")
         functions = extract_top_level_functions(source_file)
-        
+
         modules_to_migrate[mapping["target"]] = {
             "functions": functions,
             "description": mapping["description"],
         }
-    
+
     # Generate modules
     print("\n📦 Creating primitives/mining modules...")
     for module_name, data in modules_to_migrate.items():
         funcs = data["functions"]
         if not funcs:
             continue
-        
+
         funcs_sorted = sorted(funcs, key=lambda x: x["start_line"])
-        
+
         header = generate_module_header(module_name, data["description"])
-        
+
         # Clean code for each function
         cleaned_codes = []
         for func in funcs_sorted:
             cleaned_code = clean_imports_for_primitives(func["code"], f"geosuite/mining/{module_name}.py")
             cleaned_codes.append(cleaned_code)
-        
+
         module_content = header + "\n\n\n".join(cleaned_codes) + "\n"
-        
+
         module_file = mining_dir / f"{module_name}.py"
         module_file.write_text(module_content)
         print(f"   ✅ {module_file}: {len(funcs)} functions/classes ({len(module_content.splitlines())} lines)")
-    
+
     # Generate __init__.py
     init_content = generate_mining_init(modules_to_migrate)
     (mining_dir / "__init__.py").write_text(init_content)
     print(f"\n   ✅ {mining_dir / '__init__.py'}")
-    
+
     print("\n✅ Mining module migration complete!")
 
 
-def generate_mining_init(module_assignments: Dict) -> str:
+def generate_mining_init(module_assignments: dict) -> str:
     """Generate __init__.py for primitives/mining package."""
     content = '''"""Geosmith mining primitives (modular package).
 
@@ -292,12 +290,12 @@ This package maintains backward compatibility with the original flat import:
 # Import order matters - avoid circular imports
 
 '''
-    
+
     for module_name, data in sorted(module_assignments.items()):
         funcs = data["functions"]
         if not funcs:
             continue
-        
+
         func_names = sorted(set(f['name'] for f in funcs))
         content += f"# {module_name.replace('_', ' ').title()}\n"
         content += f"from geosmith.primitives.mining.{module_name} import (\n"
@@ -310,7 +308,7 @@ This package maintains backward compatibility with the original flat import:
                 continue
             content += f"    {name},\n"
         content += ")\n\n"
-    
+
     # Generate __all__
     all_names = []
     for module_name, data in module_assignments.items():
@@ -319,12 +317,13 @@ This package maintains backward compatibility with the original flat import:
             if not name.startswith("__") or name == "__init__":
                 if not name.startswith("_"):  # Only public
                     all_names.append(name)
-    
+
     content += f"__all__ = {sorted(set(all_names))!r}\n"
-    
+
     return content
 
 
 if __name__ == "__main__":
     main()
+
 

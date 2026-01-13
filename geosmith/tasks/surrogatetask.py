@@ -21,14 +21,15 @@ logger = logging.getLogger(__name__)
 class SurrogateTask:
     """Task for training and using surrogate models.
 
-    Translates user intent for fast simulation emulation into surrogate model operations.
+    Translates user intent for fast simulation emulation into surrogate model
+    operations.
 
     Example:
         >>> from geosmith.tasks.surrogatetask import SurrogateTask
         >>> from geosmith.primitives.simulation import sequential_gaussian_simulation
         >>>
         >>> task = SurrogateTask(model_type='xgboost')
-        >>> 
+        >>>
         >>> # Train surrogate on expensive simulation
         >>> surrogate = task.train_emulator(
         ...     simulation_func=sequential_gaussian_simulation,
@@ -50,13 +51,16 @@ class SurrogateTask:
         """Initialize SurrogateTask.
 
         Args:
-            model_type: Model type ('xgboost', 'lightgbm', 'gradient_boosting', 'random_forest').
-                Default 'xgboost' for best performance on large datasets.
-            n_estimators: Number of boosting rounds/trees. Higher = more capacity, slower training.
+            model_type: Model type ('xgboost', 'lightgbm', 'gradient_boosting',
+                'random_forest'). Default 'xgboost' for best performance on
+                large datasets.
+            n_estimators: Number of boosting rounds/trees. Higher = more
+                capacity, slower training.
                 Default 200 is a good balance for most use cases.
             max_depth: Maximum tree depth. Controls model complexity and overfitting.
                 Default 6 is typically sufficient.
-            learning_rate: Learning rate for boosting. Lower = more iterations needed, better generalization.
+            learning_rate: Learning rate for boosting. Lower = more iterations
+                needed, better generalization.
                 Default 0.05 is conservative and works well with n_estimators=200.
             random_state: Random seed for reproducibility. Default 42.
 
@@ -188,4 +192,3 @@ class SurrogateTask:
             f"n_estimators={self.n_estimators}, max_depth={self.max_depth}, "
             f"learning_rate={self.learning_rate})"
         )
-

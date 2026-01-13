@@ -122,9 +122,7 @@ def process_drillhole_data(
     if grade_col is None:
         numeric_cols = assay_df.select_dtypes(include=[np.number]).columns
         exclude = ["x", "y", "z", "from", "to", "depth", "easting", "northing", "rl"]
-        grade_col = next(
-            (c for c in numeric_cols if c.lower() not in exclude), None
-        )
+        grade_col = next((c for c in numeric_cols if c.lower() not in exclude), None)
 
     # Validate required columns
     required = {
@@ -279,4 +277,3 @@ def compute_3d_coordinates(
 
     # Create PointSet
     return PointSet(coordinates=coordinates, attributes=attributes)
-

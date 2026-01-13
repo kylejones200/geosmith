@@ -38,11 +38,11 @@ def read_grdecl(
 
     Example:
         >>> from geosmith.workflows.grdecl import read_grdecl
-        >>> 
+        >>>
         >>> # Read all properties
         >>> data = read_grdecl('SPE9.GRDECL')
         >>> print(f"Grid: {data['dimensions']}")
-        >>> 
+        >>>
         >>> # Read specific property as RasterGrid
         >>> permx = read_grdecl('SPE9.GRDECL', property_name='PERMX')
         >>> print(f"Permeability grid: {permx.data.shape}")
@@ -152,9 +152,7 @@ def _parse_property(content: str, property_name: str) -> np.ndarray:
         # Remove trailing / and whitespace
         line = re.sub(r"/.*", "", line)
         # Extract numbers
-        line_numbers = re.findall(
-            r"[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?", line
-        )
+        line_numbers = re.findall(r"[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?", line)
         numbers.extend([float(x) for x in line_numbers])
 
     return np.array(numbers)
@@ -180,9 +178,7 @@ def write_grdecl(
 
     if isinstance(data, RasterGrid):
         if property_name is None:
-            raise ValueError(
-                "property_name must be specified when data is RasterGrid"
-            )
+            raise ValueError("property_name must be specified when data is RasterGrid")
 
         # Extract dimensions from RasterGrid
         if data.data.ndim == 3:
@@ -193,15 +189,11 @@ def write_grdecl(
         properties = {property_name: data.data}
     elif isinstance(data, dict):
         if "dimensions" not in data or "properties" not in data:
-            raise ValueError(
-                "Dictionary must have 'dimensions' and 'properties' keys"
-            )
+            raise ValueError("Dictionary must have 'dimensions' and 'properties' keys")
         nx, ny, nz = data["dimensions"]
         properties = data["properties"]
     else:
-        raise ValueError(
-            f"data must be dict or RasterGrid, got {type(data)}"
-        )
+        raise ValueError(f"data must be dict or RasterGrid, got {type(data)}")
 
     # Write GRDECL file
     with open(filepath, "w") as f:
@@ -266,16 +258,11 @@ def export_block_model(
         else:
             block_model.to_csv(filename, index=False)
 
-        logger.info(
-            f"Exported block model to {filename} ({len(block_model):,} blocks)"
-        )
+        logger.info(f"Exported block model to {filename} ({len(block_model):,} blocks)")
 
     elif format == "parquet":
         block_model.to_parquet(filename, index=False)
-        logger.info(
-            f"Exported block model to {filename} ({len(block_model):,} blocks)"
-        )
+        logger.info(f"Exported block model to {filename} ({len(block_model):,} blocks)")
 
     else:
         raise ValueError(f"Unsupported format: {format}. Use 'csv' or 'parquet'")
-

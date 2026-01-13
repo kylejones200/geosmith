@@ -33,7 +33,8 @@ def analyze_temporal_coverage(
             - 'unique_dates': Number of unique dates
             - 'date_gaps': List of gap periods
             - 'monthly_coverage': Count of records per month
-            - 'active_wells_by_period': Number of active wells per period (if well_id_col provided)
+            - 'active_wells_by_period': Number of active wells per period
+                (if well_id_col provided)
 
     Example:
         >>> from geosmith.primitives.production import analyze_temporal_coverage
@@ -144,12 +145,8 @@ def analyze_spatial_distribution(
     if production_col and production_col in df.columns:
         # Weighted centroid
         weights = df[production_col].fillna(0).abs()
-        center_lat = np.average(
-            spatial_df[lat_col], weights=weights[: len(spatial_df)]
-        )
-        center_lon = np.average(
-            spatial_df[lon_col], weights=weights[: len(spatial_df)]
-        )
+        center_lat = np.average(spatial_df[lat_col], weights=weights[: len(spatial_df)])
+        center_lon = np.average(spatial_df[lon_col], weights=weights[: len(spatial_df)])
     else:
         # Simple centroid
         center_lat = spatial_df[lat_col].mean()
@@ -186,7 +183,8 @@ def aggregate_by_field(
     Args:
         df: DataFrame with production data.
         field_col: Name of field column, default 'FieldName'.
-        production_cols: List of production columns to aggregate (e.g., ['Oil', 'Gas', 'Wtr']).
+        production_cols: List of production columns to aggregate
+            (e.g., ['Oil', 'Gas', 'Wtr']).
         date_col: Optional date column for time-based aggregation.
 
     Returns:
@@ -224,9 +222,7 @@ def aggregate_by_field(
     # Filter to available columns
     available_cols = [col for col in production_cols if col in df.columns]
     if not available_cols:
-        raise ValueError(
-            "None of the specified production columns found in DataFrame"
-        )
+        raise ValueError("None of the specified production columns found in DataFrame")
 
     # Aggregate by field
     agg_dict: Dict[str, List[str]] = {}
@@ -236,9 +232,7 @@ def aggregate_by_field(
     field_agg = df.groupby(field_col).agg(agg_dict)
 
     # Flatten column names
-    field_agg.columns = [
-        "_".join(col).strip() for col in field_agg.columns.values
-    ]
+    field_agg.columns = ["_".join(col).strip() for col in field_agg.columns.values]
 
     # Add well count if available
     well_cols = ["API_WELLNO", "WellName", "UWI", "well_id"]
@@ -271,7 +265,8 @@ def aggregate_by_pool(
         date_col: Optional date column for time-based aggregation.
 
     Returns:
-        DataFrame with pool-level aggregations (similar structure to aggregate_by_field).
+        DataFrame with pool-level aggregations (similar structure to
+            aggregate_by_field).
 
     Example:
         >>> from geosmith.primitives.production import aggregate_by_pool
@@ -303,7 +298,8 @@ def aggregate_by_county(
         date_col: Optional date column.
 
     Returns:
-        DataFrame with county-level aggregations (similar structure to aggregate_by_field).
+        DataFrame with county-level aggregations (similar structure to
+            aggregate_by_field).
 
     Example:
         >>> from geosmith.primitives.production import aggregate_by_county
@@ -378,9 +374,7 @@ def calculate_well_statistics(
         agg_dict[col] = ["sum", "mean", "max", "count"]
 
     well_stats = df.groupby(well_id_col).agg(agg_dict)
-    well_stats.columns = [
-        "_".join(col).strip() for col in well_stats.columns.values
-    ]
+    well_stats.columns = ["_".join(col).strip() for col in well_stats.columns.values]
 
     # Add date statistics if date_col provided
     if date_col and date_col in df.columns:
@@ -501,7 +495,10 @@ def calculate_production_density(
         >>> density = calculate_production_density(
         ...     df, production_col='Oil', well_id_col='API_WELLNO', bin_size_degrees=0.1
         ... )
-        >>> print(f"Highest density: {density.loc[density['production_density'].idxmax()]}")
+        >>> print(
+        ...     f"Highest density: "
+        ...     f"{density.loc[density['production_density'].idxmax()]}"
+        ... )
     """
     if lat_col not in df.columns or lon_col not in df.columns:
         raise ValueError("Latitude or longitude columns not found")
@@ -538,9 +535,7 @@ def calculate_production_density(
     )
 
     # Remove NaN bins
-    df_clean = df_clean[
-        df_clean["lat_bin"].notna() & df_clean["lon_bin"].notna()
-    ]
+    df_clean = df_clean[df_clean["lat_bin"].notna() & df_clean["lon_bin"].notna()]
 
     # Aggregate by bin
     agg_dict: Dict[str, Union[List[str], str]] = {
@@ -650,12 +645,8 @@ def identify_production_hotspots(
     )
 
     # Identify hotspots (above percentile threshold)
-    threshold = np.percentile(
-        density_df["production_density"], percentile_threshold
-    )
-    hotspots = density_df[
-        density_df["production_density"] >= threshold
-    ].copy()
+    threshold = np.percentile(density_df["production_density"], percentile_threshold)
+    hotspots = density_df[density_df["production_density"] >= threshold].copy()
 
     hotspots["percentile_threshold"] = percentile_threshold
     hotspots["threshold_value"] = threshold
@@ -668,4 +659,3 @@ def identify_production_hotspots(
     logger.info(f"Density threshold: {threshold:.2f}")
 
     return hotspots.sort_values("production_density", ascending=False)
-

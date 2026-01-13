@@ -1,8 +1,9 @@
 """Numba JIT compilation helpers with graceful degradation.
 
-This module provides Numba decorators with automatic fallback when Numba is not available.
-Performance-critical numerical functions can use these decorators to achieve 10-100x speedups
-with minimal code changes.
+This module provides Numba decorators with automatic fallback when
+Numba is not available. Performance-critical numerical functions can
+use these decorators to achieve 10-100x speedups with minimal code
+changes.
 
 Migrated from geosuite.utils.numba_helpers.
 Layer 2: Primitives - Pure operations.
@@ -61,6 +62,7 @@ def njit(*args, **kwargs):
         ...         result += (y[i] + y[i-1]) * (x[i] - x[i-1]) / 2
         ...     return result
     """
+
     # No-op decorator: return function unchanged
     def decorator(func: Callable) -> Callable:
         return func
@@ -88,4 +90,3 @@ else:
 
 
 __all__ = ["njit", "prange", "NUMBA_AVAILABLE"]
-

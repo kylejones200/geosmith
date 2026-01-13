@@ -74,3 +74,4 @@ class TestCalculatePermeabilityPorosityOnly:
         assert len(k) == 3
         assert np.all(k > 0)
 
+

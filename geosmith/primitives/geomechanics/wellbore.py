@@ -53,6 +53,7 @@ class GeomechParams:
     tensile_strength: float = 0.0
     delta_p: float = 0.0
 
+
 @dataclass
 class WellboreStabilityResult:
     """Results from wellbore stability analysis.
@@ -74,6 +75,7 @@ class WellboreStabilityResult:
     safe_mud_weight_min: float
     safe_mud_weight_max: float
     stability_margin: float
+
 
 def breakout_analysis(
     sv: float,
@@ -99,11 +101,20 @@ def breakout_analysis(
         WellboreStabilityResult with all stability parameters.
 
     Example:
-        >>> from geosmith.primitives.geomechanics import breakout_analysis, GeomechParams
+        >>> from geosmith.primitives.geomechanics import (
+        ...     breakout_analysis, GeomechParams
+        ... )
         >>>
         >>> params = GeomechParams(ucs=50.0, mu=0.6, tensile_strength=5.0)
-        >>> result = breakout_analysis(sv=100.0, shmax=80.0, shmin=60.0, pp=40.0, params=params, depth=2000.0)
-        >>> print(f"Safe mud weight window: {result.safe_mud_weight_min:.2f} - {result.safe_mud_weight_max:.2f} g/cc")
+        >>> result = breakout_analysis(
+        ...     sv=100.0, shmax=80.0, shmin=60.0, pp=40.0,
+        ...     params=params, depth=2000.0
+        ... )
+        >>> print(
+        ...     f"Safe mud weight window: "
+        ...     f"{result.safe_mud_weight_min:.2f} - "
+        ...     f"{result.safe_mud_weight_max:.2f} g/cc"
+        ... )
     """
     # Breakout analysis - find minimum mud pressure to prevent failure
     # Using Mohr-Coulomb failure criterion at wellbore wall
@@ -171,12 +182,8 @@ def breakout_analysis(
     breakout_azimuth = 90.0  # degrees from SHmax
 
     # Convert to mud weights
-    safe_mud_weight_min = (
-        breakout_pressure / (depth * 0.00981) if depth > 0 else 0
-    )
-    safe_mud_weight_max = (
-        fracture_pressure / (depth * 0.00981) if depth > 0 else 0
-    )
+    safe_mud_weight_min = breakout_pressure / (depth * 0.00981) if depth > 0 else 0
+    safe_mud_weight_max = fracture_pressure / (depth * 0.00981) if depth > 0 else 0
 
     # Stability margin
     pressure_window = fracture_pressure - breakout_pressure
@@ -192,13 +199,15 @@ def breakout_analysis(
         stability_margin=stability_margin,
     )
 
+
 def safe_mud_weight_window(
     df: "pd.DataFrame", params: GeomechParams, shmin_estimate: Optional[float] = None
 ) -> "pd.DataFrame":
     """Calculate safe mud weight window for entire well trajectory.
 
     Args:
-        df: DataFrame with 'depth_m' and 'RHOB' columns (depth in meters, density in g/cc).
+        df: DataFrame with 'depth_m' and 'RHOB' columns (depth in meters,
+            density in g/cc).
         params: GeomechParams with geomechanical parameters.
         shmin_estimate: Optional estimate of Shmin (MPa). If None, uses stress polygon.
 
@@ -217,13 +226,19 @@ def safe_mud_weight_window(
         - stability_margin: Stability margin (fraction)
 
     Example:
-        >>> from geosmith.primitives.geomechanics import safe_mud_weight_window, GeomechParams
+        >>> from geosmith.primitives.geomechanics import (
+        ...     safe_mud_weight_window, GeomechParams
+        ... )
         >>> import pandas as pd
         >>>
         >>> df = pd.DataFrame({'depth_m': [1000, 2000, 3000], 'RHOB': [2.2, 2.4, 2.6]})
         >>> params = GeomechParams()
         >>> result = safe_mud_weight_window(df, params)
-        >>> print(f"Mud weight window: {result['mud_weight_min_gcc'].min():.2f} - {result['mud_weight_max_gcc'].max():.2f} g/cc")
+        >>> print(
+        ...     f"Mud weight window: "
+        ...     f"{result['mud_weight_min_gcc'].min():.2f} - "
+        ...     f"{result['mud_weight_max_gcc'].max():.2f} g/cc"
+        ... )
     """
     if not PANDAS_AVAILABLE:
         raise ImportError(
@@ -257,12 +272,12 @@ def safe_mud_weight_window(
 
         # Estimate SHmax using stress polygon bounds
         bounds = shmax_bounds(sv_val, shmin_val, pp_val, params.mu)
-        shmax_val = min(
-            bounds["shmax_strike_slip"], bounds["shmax_tensile_fracture"]
-        )
+        shmax_val = min(bounds["shmax_strike_slip"], bounds["shmax_tensile_fracture"])
 
         # Perform wellbore stability analysis
-        stability = breakout_analysis(sv_val, shmax_val, shmin_val, pp_val, params, depth)
+        stability = breakout_analysis(
+            sv_val, shmax_val, shmin_val, pp_val, params, depth
+        )
 
         results.append(
             {
@@ -281,6 +296,7 @@ def safe_mud_weight_window(
         )
 
     return pd.DataFrame(results)
+
 
 def wellbore_stress_plot_data(
     sv: float,
@@ -315,7 +331,10 @@ def wellbore_stress_plot_data(
         >>> plot_data = wellbore_stress_plot_data(
         ...     sv=100.0, shmax=80.0, shmin=60.0, pp=40.0, pw=50.0
         ... )
-        >>> print(f"Max tangential stress: {plot_data['sigma_theta_eff'].max():.1f} MPa")
+        >>> print(
+        ...     f"Max tangential stress: "
+        ...     f"{plot_data['sigma_theta_eff'].max():.1f} MPa"
+        ... )
     """
     if not PANDAS_AVAILABLE:
         raise ImportError(
@@ -338,6 +357,7 @@ def wellbore_stress_plot_data(
             "sigma_r_total": sigma_r + pp,
         }
     )
+
 
 def drilling_margin_analysis(
     breakout_pressure: float,
@@ -399,10 +419,9 @@ def drilling_margin_analysis(
         "fracture_margin_pct": fracture_margin,
         "pressure_window_mpa": fracture_pressure - breakout_pressure,
         "safety_status": status,
-        "recommended_mud_weight_gcc": (breakout_pressure + fracture_pressure)
-        / 2
-        / (depth * 0.00981)
-        if depth > 0
-        else 0.0,
+        "recommended_mud_weight_gcc": (
+            (breakout_pressure + fracture_pressure) / 2 / (depth * 0.00981)
+            if depth > 0
+            else 0.0
+        ),
     }
-

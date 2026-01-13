@@ -153,3 +153,4 @@ class TestGeoTable:
         with pytest.raises(ValueError, match="geometry column"):
             GeoTable(data=data, geometry_column="geometry")
 
+

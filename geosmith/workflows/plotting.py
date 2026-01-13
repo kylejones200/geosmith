@@ -81,9 +81,7 @@ def buckles_plot(
 
     # Calculate Bulk Volume Water
     df_plot = df[[porosity_col, sw_col]].dropna()
-    df_plot = df_plot[
-        (df_plot[porosity_col] > 0) & (df_plot[sw_col] > 0)
-    ]
+    df_plot = df_plot[(df_plot[porosity_col] > 0) & (df_plot[sw_col] > 0)]
 
     phi = df_plot[porosity_col].values
     sw = df_plot[sw_col].values
@@ -220,9 +218,7 @@ def pickett_plot(
 
     # Remove invalid data
     df_plot = df[[porosity_col, resistivity_col]].dropna()
-    df_plot = df_plot[
-        (df_plot[porosity_col] > 0) & (df_plot[resistivity_col] > 0)
-    ]
+    df_plot = df_plot[(df_plot[porosity_col] > 0) & (df_plot[resistivity_col] > 0)]
 
     phi = df_plot[porosity_col].values
     rt = df_plot[resistivity_col].values
@@ -274,9 +270,7 @@ def pickett_plot(
         param_text,
         transform=ax.transAxes,
         verticalalignment="top",
-        bbox=dict(
-            boxstyle="round", facecolor="white", alpha=0.8, edgecolor="gray"
-        ),
+        bbox=dict(boxstyle="round", facecolor="white", alpha=0.8, edgecolor="gray"),
     )
 
     # Clean up spines
@@ -343,14 +337,26 @@ def neutron_density_crossplot(
         ss_phi = np.linspace(0, 0.4, 50)
         ss_rhob = 2.65 - ss_phi * (2.65 - 1.0)  # sandstone matrix = 2.65
         ax.plot(
-            ss_phi, ss_rhob, "-", color="gold", linewidth=2, label="Sandstone", alpha=0.7
+            ss_phi,
+            ss_rhob,
+            "-",
+            color="gold",
+            linewidth=2,
+            label="Sandstone",
+            alpha=0.7,
         )
 
         # Limestone line
         ls_phi = np.linspace(0, 0.4, 50)
         ls_rhob = 2.71 - ls_phi * (2.71 - 1.0)  # limestone matrix = 2.71
         ax.plot(
-            ls_phi, ls_rhob, "-", color="gray", linewidth=2, label="Limestone", alpha=0.7
+            ls_phi,
+            ls_rhob,
+            "-",
+            color="gray",
+            linewidth=2,
+            label="Limestone",
+            alpha=0.7,
         )
 
         # Dolomite line
@@ -397,7 +403,6 @@ def neutron_density_crossplot(
     return fig
 
 
-
 def plot_pressure_profile(
     df: pd.DataFrame,
     depth_col: str = "Depth",
@@ -428,7 +433,9 @@ def plot_pressure_profile(
     Example:
         >>> from geosmith.workflows.plotting import plot_pressure_profile
         >>>
-        >>> fig = plot_pressure_profile(df, depth_col='DEPTH', pressure_cols=['Sv', 'Ph', 'Pp'])
+        >>> fig = plot_pressure_profile(
+        ...     df, depth_col='DEPTH', pressure_cols=['Sv', 'Ph', 'Pp']
+        ... )
         >>> fig.savefig('pressure_profile.png')
 
     Raises:
@@ -523,7 +530,9 @@ def plot_mud_weight_profile(
     Example:
         >>> from geosmith.workflows.plotting import plot_mud_weight_profile
         >>>
-        >>> fig = plot_mud_weight_profile(df, depth_col='DEPTH', mw_cols=['MW_min', 'MW_max'])
+        >>> fig = plot_mud_weight_profile(
+        ...     df, depth_col='DEPTH', mw_cols=['MW_min', 'MW_max']
+        ... )
         >>> fig.savefig('mud_weight_profile.png')
 
     Raises:
@@ -537,9 +546,7 @@ def plot_mud_weight_profile(
 
     if mw_cols is None:
         mw_cols = [
-            col
-            for col in df.columns
-            if "MW" in col or "mud_weight" in col.lower()
+            col for col in df.columns if "MW" in col or "mud_weight" in col.lower()
         ]
 
     fig, ax = plt.subplots(figsize=figsize)
@@ -570,10 +577,10 @@ def plot_mud_weight_profile(
     return fig
 
 
-
 # =============================================================================
 # Well Log Strip Charts
 # =============================================================================
+
 
 def _is_plotsmith_available() -> bool:
     """Check if PlotSmith is available.
@@ -583,6 +590,7 @@ def _is_plotsmith_available() -> bool:
     """
     try:
         import plotsmith  # noqa: F401
+
         return True
     except ImportError:
         return False
@@ -593,10 +601,11 @@ def _apply_plotsmith_style() -> None:
     if _is_plotsmith_available():
         try:
             import plotsmith
+
             # PlotSmith may have a style.apply() or similar
-            if hasattr(plotsmith, 'apply'):
+            if hasattr(plotsmith, "apply"):
                 plotsmith.apply()
-            elif hasattr(plotsmith, 'style'):
+            elif hasattr(plotsmith, "style"):
                 plotsmith.style.apply()
         except (ImportError, AttributeError):
             pass  # Fall back to default matplotlib
@@ -604,79 +613,69 @@ def _apply_plotsmith_style() -> None:
 
 # Default color schemes for facies
 FACIES_COLORS = {
-    'Sand': '#FFFF00',
-    'Shale': '#808080',
-    'Siltstone': '#C8C896',
-    'Carbonate': '#0000FF',
-    'Limestone': '#87CEEB',
-    'Dolomite': '#FFB6C1',
-    'Coal': '#000000',
-    'Clean_Sand': '#FFFF00',
-    'Shaly_Sand': '#F0E68C',
-    'Mudstone': '#8B4513'
+    "Sand": "#FFFF00",
+    "Shale": "#808080",
+    "Siltstone": "#C8C896",
+    "Carbonate": "#0000FF",
+    "Limestone": "#87CEEB",
+    "Dolomite": "#FFB6C1",
+    "Coal": "#000000",
+    "Clean_Sand": "#FFFF00",
+    "Shaly_Sand": "#F0E68C",
+    "Mudstone": "#8B4513",
 }
 
 # Common log display settings
 LOG_SETTINGS = {
-    'GR': {
-        'name': 'Gamma Ray',
-        'unit': 'API',
-        'color': 'green',
-        'range': [0, 150]
+    "GR": {"name": "Gamma Ray", "unit": "API", "color": "green", "range": [0, 150]},
+    "RHOB": {
+        "name": "Bulk Density",
+        "unit": "g/cc",
+        "color": "red",
+        "range": [1.8, 2.8],
     },
-    'RHOB': {
-        'name': 'Bulk Density',
-        'unit': 'g/cc',
-        'color': 'red',
-        'range': [1.8, 2.8]
+    "NPHI": {
+        "name": "Neutron Porosity",
+        "unit": "v/v",
+        "color": "blue",
+        "range": [0.45, -0.15],  # Reversed scale
     },
-    'NPHI': {
-        'name': 'Neutron Porosity',
-        'unit': 'v/v',
-        'color': 'blue',
-        'range': [0.45, -0.15]  # Reversed scale
+    "RT": {
+        "name": "Resistivity",
+        "unit": "ohm.m",
+        "color": "black",
+        "range": [0.2, 2000],
+        "log_scale": True,
     },
-    'RT': {
-        'name': 'Resistivity',
-        'unit': 'ohm.m',
-        'color': 'black',
-        'range': [0.2, 2000],
-        'log_scale': True
+    "ILD": {
+        "name": "Deep Resistivity",
+        "unit": "ohm.m",
+        "color": "black",
+        "range": [0.2, 2000],
+        "log_scale": True,
     },
-    'ILD': {
-        'name': 'Deep Resistivity',
-        'unit': 'ohm.m',
-        'color': 'black',
-        'range': [0.2, 2000],
-        'log_scale': True
+    "PE": {
+        "name": "Photo Electric",
+        "unit": "b/e",
+        "color": "purple",
+        "range": [0, 10],
     },
-    'PE': {
-        'name': 'Photo Electric',
-        'unit': 'b/e',
-        'color': 'purple',
-        'range': [0, 10]
+    "DT": {
+        "name": "Sonic",
+        "unit": "us/ft",
+        "color": "blue",
+        "range": [140, 40],  # Reversed scale
     },
-    'DT': {
-        'name': 'Sonic',
-        'unit': 'us/ft',
-        'color': 'blue',
-        'range': [140, 40]  # Reversed scale
-    },
-    'CALI': {
-        'name': 'Caliper',
-        'unit': 'in',
-        'color': 'orange',
-        'range': [6, 16]
-    }
+    "CALI": {"name": "Caliper", "unit": "in", "color": "orange", "range": [6, 16]},
 }
 
 
 def create_strip_chart(
     df: pd.DataFrame,
-    depth_col: str = 'DEPTH',
+    depth_col: str = "DEPTH",
     log_cols: Optional[List[str]] = None,
     facies_col: Optional[str] = None,
-    title: str = 'Well Log Strip Chart',
+    title: str = "Well Log Strip Chart",
     figsize: Optional[Tuple[float, float]] = None,
     depth_range: Optional[Tuple[float, float]] = None,
     colors: Optional[Dict[str, str]] = None,
@@ -696,7 +695,8 @@ def create_strip_chart(
         figsize: Figure size (width, height) in inches. If None, auto-sized.
         depth_range: Optional (min, max) depth range to display.
         colors: Optional dictionary mapping log names to colors.
-        use_plotsmith: If True, use PlotSmith styling (if available). If None, auto-detect.
+        use_plotsmith: If True, use PlotSmith styling (if available).
+            If None, auto-detect.
 
     Returns:
         Matplotlib Figure object.
@@ -729,57 +729,57 @@ def create_strip_chart(
     # Determine which logs to plot
     if log_cols is None:
         # Auto-detect available common logs
-        common_logs = ['GR', 'RHOB', 'NPHI', 'RT', 'ILD', 'PE', 'DT', 'CALI']
+        common_logs = ["GR", "RHOB", "NPHI", "RT", "ILD", "PE", "DT", "CALI"]
         log_cols = [col for col in common_logs if col in df.columns]
-        
+
         if not log_cols:
             # Fallback to any numeric columns except depth
             log_cols = [
-                col for col in df.columns 
+                col
+                for col in df.columns
                 if col != depth_col and pd.api.types.is_numeric_dtype(df[col])
             ][:4]
-    
+
     if not log_cols:
         raise ValueError("No log columns found to plot")
 
     # Apply depth range filter if specified
     if depth_range:
         df_plot = df[
-            (df[depth_col] >= depth_range[0]) & 
-            (df[depth_col] <= depth_range[1])
+            (df[depth_col] >= depth_range[0]) & (df[depth_col] <= depth_range[1])
         ].copy()
     else:
         df_plot = df.copy()
-    
+
     # Add facies track if specified
     n_tracks = len(log_cols) + (1 if facies_col else 0)
-    
+
     # Auto-size if not specified
     if figsize is None:
         width = min(2.5 * n_tracks, 15)
         height = 10
         figsize = (width, height)
-    
+
     # Create subplots
     fig, axes = plt.subplots(1, n_tracks, figsize=figsize, sharey=True)
-    
+
     # Handle single track case
     if n_tracks == 1:
         axes = [axes]
-    
+
     # Plot each log track
     for idx, col in enumerate(log_cols):
         ax = axes[idx]
         add_log_track(ax, df_plot, depth_col, col, colors)
-    
+
     # Add facies track if specified
     if facies_col and facies_col in df_plot.columns:
         ax = axes[-1]
         add_facies_track(ax, df_plot, depth_col, facies_col)
-    
+
     # Set overall title
     fig.suptitle(title, fontsize=13, y=0.995)
-    
+
     plt.tight_layout()
     return fig
 
@@ -802,43 +802,43 @@ def add_log_track(
     """
     # Get settings for this log
     settings = LOG_SETTINGS.get(log_col, {})
-    log_name = settings.get('name', log_col)
-    unit = settings.get('unit', '')
-    color = colors.get(log_col) if colors else settings.get('color', 'black')
-    log_range = settings.get('range')
-    log_scale = settings.get('log_scale', False)
-    
+    log_name = settings.get("name", log_col)
+    unit = settings.get("unit", "")
+    color = colors.get(log_col) if colors else settings.get("color", "black")
+    log_range = settings.get("range")
+    log_scale = settings.get("log_scale", False)
+
     # Plot the log
     depth = df[depth_col].values
     log_data = df[log_col].values
-    
+
     # Filter out NaN values
     mask = ~(np.isnan(depth) | np.isnan(log_data))
     depth = depth[mask]
     log_data = log_data[mask]
-    
+
     if len(depth) == 0:
         logger.warning(f"No valid data for {log_col}")
         return
-    
+
     ax.plot(log_data, depth, color=color, linewidth=1)
-    
+
     # Set axis properties
     if log_scale:
-        ax.set_xscale('log')
-    
+        ax.set_xscale("log")
+
     if log_range:
         ax.set_xlim(log_range)
-    
-    ax.set_xlabel(f'{log_name}\n({unit})' if unit else log_name, fontsize=10)
-    
+
+    ax.set_xlabel(f"{log_name}\n({unit})" if unit else log_name, fontsize=10)
+
     # Invert y-axis for depth (geological convention)
     ax.invert_yaxis()
-    
+
     # Clean styling
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.grid(True, alpha=0.3, linestyle=':')
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.grid(True, alpha=0.3, linestyle=":")
 
 
 def add_facies_track(
@@ -859,55 +859,56 @@ def add_facies_track(
     """
     if facies_colors is None:
         facies_colors = FACIES_COLORS
-    
+
     depth = df[depth_col].values
     facies = df[facies_col].values
-    
+
     # Get unique facies
     unique_facies = df[facies_col].dropna().unique()
-    
+
     # Plot facies as colored bands
     for i in range(len(depth) - 1):
         facies_name = facies[i]
         if pd.notna(facies_name):
-            color = facies_colors.get(str(facies_name), '#CCCCCC')
-            ax.fill_betweenx(
-                [depth[i], depth[i+1]], 0, 1,
-                color=color, alpha=0.8
-            )
-    
-    ax.set_xlabel('Facies', fontsize=10)
+            color = facies_colors.get(str(facies_name), "#CCCCCC")
+            ax.fill_betweenx([depth[i], depth[i + 1]], 0, 1, color=color, alpha=0.8)
+
+    ax.set_xlabel("Facies", fontsize=10)
     ax.set_xlim(0, 1)
     ax.set_xticks([])
     ax.invert_yaxis()
-    
+
     # Add legend
     handles = []
     labels = []
     for facies_name in sorted(unique_facies):
         if pd.notna(facies_name):
             facies_str = str(facies_name)
-            color = facies_colors.get(facies_str, '#CCCCCC')
+            color = facies_colors.get(facies_str, "#CCCCCC")
             handles.append(plt.Rectangle((0, 0), 1, 1, fc=color, alpha=0.8))
             labels.append(facies_str)
-    
+
     if handles:
         ax.legend(
-            handles, labels, loc='upper right', frameon=False,
-            bbox_to_anchor=(1.0, 1.0), fontsize=8
+            handles,
+            labels,
+            loc="upper right",
+            frameon=False,
+            bbox_to_anchor=(1.0, 1.0),
+            fontsize=8,
         )
-    
+
     # Clean styling
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
 
 
 def create_facies_log_plot(
     df: pd.DataFrame,
-    depth_col: str = 'DEPTH',
-    facies_col: str = 'Facies',
+    depth_col: str = "DEPTH",
+    facies_col: str = "Facies",
     log_cols: Optional[List[str]] = None,
-    title: str = 'Well Logs with Facies',
+    title: str = "Well Logs with Facies",
     figsize: Optional[Tuple[float, float]] = None,
     depth_range: Optional[Tuple[float, float]] = None,
     use_plotsmith: Optional[bool] = None,
@@ -924,7 +925,8 @@ def create_facies_log_plot(
         title: Plot title, default 'Well Logs with Facies'.
         figsize: Figure size (width, height) in inches.
         depth_range: Optional (min, max) depth range to display.
-        use_plotsmith: If True, use PlotSmith styling (if available). If None, auto-detect.
+        use_plotsmith: If True, use PlotSmith styling (if available).
+            If None, auto-detect.
 
     Returns:
         Matplotlib Figure object.
@@ -944,10 +946,10 @@ def create_facies_log_plot(
 def create_multi_well_strip_chart(
     dfs: List[pd.DataFrame],
     well_names: List[str],
-    depth_col: str = 'DEPTH',
+    depth_col: str = "DEPTH",
     log_cols: Optional[List[str]] = None,
     facies_col: Optional[str] = None,
-    title: str = 'Multi-Well Strip Chart',
+    title: str = "Multi-Well Strip Chart",
     figsize: Optional[Tuple[float, float]] = None,
     use_plotsmith: Optional[bool] = None,
 ) -> Figure:
@@ -961,7 +963,8 @@ def create_multi_well_strip_chart(
         facies_col: Optional facies column name.
         title: Plot title, default 'Multi-Well Strip Chart'.
         figsize: Figure size (width, height) in inches.
-        use_plotsmith: If True, use PlotSmith styling (if available). If None, auto-detect.
+        use_plotsmith: If True, use PlotSmith styling (if available).
+            If None, auto-detect.
 
     Returns:
         Matplotlib Figure object.
@@ -984,66 +987,72 @@ def create_multi_well_strip_chart(
 
     if log_cols is None:
         # Auto-detect from first well
-        common_logs = ['GR', 'RHOB', 'NPHI', 'RT']
+        common_logs = ["GR", "RHOB", "NPHI", "RT"]
         log_cols = [col for col in common_logs if col in dfs[0].columns] if dfs else []
-    
+
     if not log_cols:
         raise ValueError("No log columns found to plot")
 
     n_wells = len(dfs)
     n_tracks_per_well = len(log_cols) + (1 if facies_col else 0)
-    
+
     # Auto-size if not specified
     if figsize is None:
         width = min(2.5 * n_tracks_per_well * n_wells, 20)
         height = 10
         figsize = (width, height)
-    
+
     # Create figure with subplots
     fig = plt.figure(figsize=figsize)
-    
+
     for well_idx, (df, well_name) in enumerate(zip(dfs, well_names)):
         # Create subplots for this well
         for track_idx in range(n_tracks_per_well):
             ax_idx = well_idx * n_tracks_per_well + track_idx + 1
             ax = fig.add_subplot(
-                1, n_wells * n_tracks_per_well, ax_idx,
-                sharey=(ax_idx > 1) if ax_idx > 1 else None
+                1,
+                n_wells * n_tracks_per_well,
+                ax_idx,
+                sharey=(ax_idx > 1) if ax_idx > 1 else None,
             )
-            
+
             if track_idx < len(log_cols):
                 # Log track
                 add_log_track(ax, df, depth_col, log_cols[track_idx], None)
-                
+
                 # Add well name to first track
                 if track_idx == 0:
                     ax.text(
-                        0.5, 1.02, well_name, transform=ax.transAxes,
-                        ha='center', va='bottom', fontsize=10, fontweight='bold'
+                        0.5,
+                        1.02,
+                        well_name,
+                        transform=ax.transAxes,
+                        ha="center",
+                        va="bottom",
+                        fontsize=10,
+                        fontweight="bold",
                     )
             elif facies_col and facies_col in df.columns:
                 # Facies track
                 add_facies_track(ax, df, depth_col, facies_col)
-            
+
             # Only show y-label on leftmost plot
             if well_idx > 0:
-                ax.set_ylabel('')
-    
+                ax.set_ylabel("")
+
     fig.suptitle(title, fontsize=13, y=0.995)
     plt.tight_layout()
-    
-    return fig
 
+    return fig
 
 
 # =============================================================================
 # Ternary Plots
 # =============================================================================
 
+
 def _ternary_to_cartesian(
-    a: np.ndarray,
-    b: np.ndarray,
-    c: np.ndarray
+    a: np.ndarray, b: np.ndarray, c: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Convert ternary coordinates (a, b, c) to Cartesian (x, y).
 
@@ -1064,26 +1073,25 @@ def _ternary_to_cartesian(
     a = np.asarray(a, dtype=np.float64)
     b = np.asarray(b, dtype=np.float64)
     c = np.asarray(c, dtype=np.float64)
-    
+
     # Normalize if sum > 1.5 (assuming percentages)
     total = a + b + c
     if np.any(total > 1.5):
         a = a / total
         b = b / total
         c = c / total
-    
+
     # Convert to Cartesian coordinates
     # x = (b + 2*c) / 2
     # y = (sqrt(3) * b) / 2
     x = (b + 2 * c) / 2.0
     y = (np.sqrt(3) * b) / 2.0
-    
+
     return x, y
 
 
 def _cartesian_to_ternary(
-    x: np.ndarray,
-    y: np.ndarray
+    x: np.ndarray, y: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Convert Cartesian coordinates (x, y) to ternary (a, b, c).
 
@@ -1096,21 +1104,21 @@ def _cartesian_to_ternary(
     """
     x = np.asarray(x, dtype=np.float64)
     y = np.asarray(y, dtype=np.float64)
-    
+
     # Convert from Cartesian to ternary
     b = (2 * y) / np.sqrt(3)
     c = x - (b / 2)
     a = 1 - b - c
-    
+
     return a, b, c
 
 
 def _setup_ternary_axes(
     ax: Axes,
-    labels: Tuple[str, str, str] = ('A', 'B', 'C'),
+    labels: Tuple[str, str, str] = ("A", "B", "C"),
     grid: bool = True,
-    grid_style: str = 'dashed',
-    grid_alpha: float = 0.3
+    grid_style: str = "dashed",
+    grid_alpha: float = 0.3,
 ) -> None:
     """Set up ternary plot axes with triangle frame and grid lines.
 
@@ -1126,35 +1134,40 @@ def _setup_ternary_axes(
 
     # Clear axis
     ax.clear()
-    
+
     # Draw triangle frame
-    triangle_vertices = np.array([
-        [0.5, np.sqrt(3) / 2],  # Top vertex
-        [0, 0],                  # Bottom-left
-        [1, 0]                   # Bottom-right
-    ])
-    
+    triangle_vertices = np.array(
+        [
+            [0.5, np.sqrt(3) / 2],  # Top vertex
+            [0, 0],  # Bottom-left
+            [1, 0],  # Bottom-right
+        ]
+    )
+
     triangle = mpatches.Polygon(
-        triangle_vertices, closed=True,
-        fill=False, edgecolor='black', linewidth=1.5
+        triangle_vertices, closed=True, fill=False, edgecolor="black", linewidth=1.5
     )
     ax.add_patch(triangle)
-    
+
     # Add grid lines if requested
     if grid:
         # Grid lines parallel to each side (10 divisions)
         n_grid = 10
-        
+
         # Lines parallel to bottom (horizontal)
         for i in range(1, n_grid):
             y_val = i * np.sqrt(3) / (2 * n_grid)
             x_start = (1 - (2 * i / n_grid)) / 2
             x_end = 1 - x_start
             ax.plot(
-                [x_start, x_end], [y_val, y_val],
-                linestyle=grid_style, color='gray', alpha=grid_alpha, linewidth=0.5
+                [x_start, x_end],
+                [y_val, y_val],
+                linestyle=grid_style,
+                color="gray",
+                alpha=grid_alpha,
+                linewidth=0.5,
             )
-        
+
         # Lines parallel to right side (slanted left)
         for i in range(1, n_grid):
             y_start = 0
@@ -1162,10 +1175,14 @@ def _setup_ternary_axes(
             y_end = np.sqrt(3) * (1 - i / n_grid) / 2
             x_end = 0.5 + i / (2 * n_grid)
             ax.plot(
-                [x_start, x_end], [y_start, y_end],
-                linestyle=grid_style, color='gray', alpha=grid_alpha, linewidth=0.5
+                [x_start, x_end],
+                [y_start, y_end],
+                linestyle=grid_style,
+                color="gray",
+                alpha=grid_alpha,
+                linewidth=0.5,
             )
-        
+
         # Lines parallel to left side (slanted right)
         for i in range(1, n_grid):
             y_start = 0
@@ -1173,29 +1190,34 @@ def _setup_ternary_axes(
             y_end = np.sqrt(3) * (1 - i / n_grid) / 2
             x_end = 0.5 - i / (2 * n_grid)
             ax.plot(
-                [x_start, x_end], [y_start, y_end],
-                linestyle=grid_style, color='gray', alpha=grid_alpha, linewidth=0.5
+                [x_start, x_end],
+                [y_start, y_end],
+                linestyle=grid_style,
+                color="gray",
+                alpha=grid_alpha,
+                linewidth=0.5,
             )
-    
+
     # Add axis labels
     ax.text(
-        0.5, np.sqrt(3) / 2 + 0.05, labels[0],
-        ha='center', va='bottom', fontsize=11, fontweight='bold'
+        0.5,
+        np.sqrt(3) / 2 + 0.05,
+        labels[0],
+        ha="center",
+        va="bottom",
+        fontsize=11,
+        fontweight="bold",
     )
     ax.text(
-        -0.05, -0.05, labels[1],
-        ha='right', va='top', fontsize=11, fontweight='bold'
+        -0.05, -0.05, labels[1], ha="right", va="top", fontsize=11, fontweight="bold"
     )
-    ax.text(
-        1.05, -0.05, labels[2],
-        ha='left', va='top', fontsize=11, fontweight='bold'
-    )
-    
+    ax.text(1.05, -0.05, labels[2], ha="left", va="top", fontsize=11, fontweight="bold")
+
     # Set axis limits with padding
     ax.set_xlim(-0.1, 1.1)
     ax.set_ylim(-0.1, np.sqrt(3) / 2 + 0.1)
-    ax.set_aspect('equal')
-    ax.axis('off')
+    ax.set_aspect("equal")
+    ax.axis("off")
 
 
 def ternary_plot(
@@ -1206,10 +1228,10 @@ def ternary_plot(
     labels: Optional[Tuple[str, str, str]] = None,
     color_by: Optional[str] = None,
     size_by: Optional[str] = None,
-    title: str = 'Ternary Plot',
+    title: str = "Ternary Plot",
     figsize: Tuple[float, float] = (8, 8),
     grid: bool = True,
-    cmap: str = 'viridis',
+    cmap: str = "viridis",
     alpha: float = 0.7,
     s: float = 30,
     use_plotsmith: Optional[bool] = None,
@@ -1233,7 +1255,8 @@ def ternary_plot(
         cmap: Colormap for coloring, default 'viridis'.
         alpha: Point transparency (0-1), default 0.7.
         s: Point size (if size_by not used), default 30.
-        use_plotsmith: If True, use PlotSmith styling (if available). If None, auto-detect.
+        use_plotsmith: If True, use PlotSmith styling (if available).
+            If None, auto-detect.
 
     Returns:
         Matplotlib Figure object.
@@ -1270,38 +1293,38 @@ def ternary_plot(
 
     if labels is None:
         labels = (a_col, b_col, c_col)
-    
+
     # Extract components
     a = df[a_col].values
     b = df[b_col].values
     c = df[c_col].values
-    
+
     # Remove invalid data
     mask = ~(np.isnan(a) | np.isnan(b) | np.isnan(c))
     a = a[mask]
     b = b[mask]
     c = c[mask]
-    
+
     if len(a) == 0:
         raise ValueError("No valid data points after removing NaNs")
-    
+
     # Convert to Cartesian coordinates
     x, y = _ternary_to_cartesian(a, b, c)
-    
+
     # Create figure
     fig, ax = plt.subplots(figsize=figsize)
-    
+
     # Set up ternary axes
     _setup_ternary_axes(ax, labels=labels, grid=grid)
-    
+
     # Prepare point properties
     colors = None
     sizes = np.full(len(x), s)
-    
+
     if color_by and color_by in df.columns:
         color_data = df[color_by].values[mask]
         colors = color_data
-    
+
     if size_by and size_by in df.columns:
         size_data = df[size_by].values[mask]
         # Normalize sizes to reasonable range
@@ -1310,39 +1333,52 @@ def ternary_plot(
             sizes = s * (0.5 + 1.5 * (size_data - size_min) / (size_max - size_min))
         else:
             sizes = np.full(len(x), s)
-    
+
     # Plot points
     if colors is not None:
         scatter = ax.scatter(
-            x, y, c=colors, s=sizes, alpha=alpha, cmap=cmap,
-            edgecolors='black', linewidths=0.5, zorder=3
+            x,
+            y,
+            c=colors,
+            s=sizes,
+            alpha=alpha,
+            cmap=cmap,
+            edgecolors="black",
+            linewidths=0.5,
+            zorder=3,
         )
         cbar = plt.colorbar(scatter, ax=ax, pad=0.05, shrink=0.8)
         cbar.set_label(color_by, fontsize=10)
     else:
         ax.scatter(
-            x, y, s=sizes, alpha=alpha, color='black',
-            edgecolors='white', linewidths=0.5, zorder=3
+            x,
+            y,
+            s=sizes,
+            alpha=alpha,
+            color="black",
+            edgecolors="white",
+            linewidths=0.5,
+            zorder=3,
         )
-    
+
     # Set title
-    ax.set_title(title, fontsize=13, pad=20, fontweight='bold')
-    
+    ax.set_title(title, fontsize=13, pad=20, fontweight="bold")
+
     plt.tight_layout()
     return fig
 
 
 def sand_silt_clay_plot(
     df: pd.DataFrame,
-    sand_col: str = 'Sand',
-    silt_col: str = 'Silt',
-    clay_col: str = 'Clay',
+    sand_col: str = "Sand",
+    silt_col: str = "Silt",
+    clay_col: str = "Clay",
     color_by: Optional[str] = None,
-    title: str = 'Sand-Silt-Clay Texture Classification',
+    title: str = "Sand-Silt-Clay Texture Classification",
     show_classification: bool = True,
     figsize: Tuple[float, float] = (10, 10),
     use_plotsmith: Optional[bool] = None,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> Figure:
     """Create a sand-silt-clay ternary plot for soil/sediment texture classification.
 
@@ -1355,9 +1391,11 @@ def sand_silt_clay_plot(
         clay_col: Column name for clay percentage, default 'Clay'.
         color_by: Optional column to color points by.
         title: Plot title, default 'Sand-Silt-Clay Texture Classification'.
-        show_classification: If True, draw texture classification boundaries, default True.
+        show_classification: If True, draw texture classification boundaries,
+            default True.
         figsize: Figure size (width, height) in inches, default (10, 10).
-        use_plotsmith: If True, use PlotSmith styling (if available). If None, auto-detect.
+        use_plotsmith: If True, use PlotSmith styling (if available).
+            If None, auto-detect.
         **kwargs: Additional arguments passed to ternary_plot.
 
     Returns:
@@ -1380,35 +1418,37 @@ def sand_silt_clay_plot(
         a_col=sand_col,
         b_col=silt_col,
         c_col=clay_col,
-        labels=('Sand', 'Silt', 'Clay'),
+        labels=("Sand", "Silt", "Clay"),
         title=title,
         figsize=figsize,
         color_by=color_by,
         use_plotsmith=use_plotsmith,
-        **kwargs
+        **kwargs,
     )
-    
+
     # Add texture classification zones if requested
     if show_classification:
         # Note: Full USDA texture classification requires defining polygon vertices
         # for each texture class (e.g., Loam, Sandy Loam, Clay Loam, etc.)
         # This is a placeholder for future enhancement
         # Common texture classes boundaries can be added as polygon patches
-        logger.debug("Texture classification zones can be enhanced by adding polygon patches")
-    
+        logger.debug(
+            "Texture classification zones can be enhanced by adding polygon patches"
+        )
+
     return fig
 
 
 def qfl_plot(
     df: pd.DataFrame,
-    q_col: str = 'Quartz',
-    f_col: str = 'Feldspar',
-    l_col: str = 'Lithics',
+    q_col: str = "Quartz",
+    f_col: str = "Feldspar",
+    l_col: str = "Lithics",
     color_by: Optional[str] = None,
-    title: str = 'Q-F-L Rock Classification',
+    title: str = "Q-F-L Rock Classification",
     figsize: Tuple[float, float] = (10, 10),
     use_plotsmith: Optional[bool] = None,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> Figure:
     """Create a Q-F-L (Quartz-Feldspar-Lithics) ternary plot for rock classification.
 
@@ -1423,7 +1463,8 @@ def qfl_plot(
         color_by: Optional column to color points by.
         title: Plot title, default 'Q-F-L Rock Classification'.
         figsize: Figure size (width, height) in inches, default (10, 10).
-        use_plotsmith: If True, use PlotSmith styling (if available). If None, auto-detect.
+        use_plotsmith: If True, use PlotSmith styling (if available).
+            If None, auto-detect.
         **kwargs: Additional arguments passed to ternary_plot.
 
     Returns:
@@ -1446,12 +1487,12 @@ def qfl_plot(
         a_col=q_col,
         b_col=f_col,
         c_col=l_col,
-        labels=('Quartz', 'Feldspar', 'Lithics'),
+        labels=("Quartz", "Feldspar", "Lithics"),
         title=title,
         figsize=figsize,
         color_by=color_by,
         use_plotsmith=use_plotsmith,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -1462,10 +1503,10 @@ def mineral_composition_plot(
     mineral3_col: str,
     labels: Optional[Tuple[str, str, str]] = None,
     color_by: Optional[str] = None,
-    title: str = 'Mineral Composition',
+    title: str = "Mineral Composition",
     figsize: Tuple[float, float] = (10, 10),
     use_plotsmith: Optional[bool] = None,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> Figure:
     """Create a ternary plot for mineral composition analysis.
 
@@ -1480,7 +1521,8 @@ def mineral_composition_plot(
         color_by: Optional column to color points by.
         title: Plot title, default 'Mineral Composition'.
         figsize: Figure size (width, height) in inches, default (10, 10).
-        use_plotsmith: If True, use PlotSmith styling (if available). If None, auto-detect.
+        use_plotsmith: If True, use PlotSmith styling (if available).
+            If None, auto-detect.
         **kwargs: Additional arguments passed to ternary_plot.
 
     Returns:
@@ -1503,7 +1545,7 @@ def mineral_composition_plot(
     """
     if labels is None:
         labels = (mineral1_col, mineral2_col, mineral3_col)
-    
+
     return ternary_plot(
         df=df,
         a_col=mineral1_col,
@@ -1514,9 +1556,8 @@ def mineral_composition_plot(
         figsize=figsize,
         color_by=color_by,
         use_plotsmith=use_plotsmith,
-        **kwargs
+        **kwargs,
     )
-
 
 
 # =============================================================================
@@ -1535,7 +1576,10 @@ except ImportError:
     folium = None  # type: ignore
     plugins = None  # type: ignore
     HeatMap = None  # type: ignore
-    logger.debug("folium not available. Interactive maps require folium. Install with: pip install folium")
+    logger.debug(
+        "folium not available. Interactive maps require folium. "
+        "Install with: pip install folium"
+    )
 
 
 def create_interactive_kriging_map(
@@ -1851,7 +1895,9 @@ def create_interactive_well_map(
             val = 1.0
 
         well_id = (
-            str(row[well_id_col]) if well_id_col and well_id_col in row.index else f"Well {idx}"
+            str(row[well_id_col])
+            if well_id_col and well_id_col in row.index
+            else f"Well {idx}"
         )
 
         # Color code by value
@@ -2075,7 +2121,8 @@ def create_field_map(
 ) -> Any:
     """Create an interactive or static field map showing well locations.
 
-    Uses Folium for interactive maps or GeoPandas with PlotSmith styling for static maps.
+    Uses Folium for interactive maps or GeoPandas with PlotSmith styling
+    for static maps.
 
     Args:
         wells_df: DataFrame with well coordinates and optional attributes.
@@ -2084,9 +2131,12 @@ def create_field_map(
         well_name_col: Optional column name for well names.
         color_by: Optional column name to use for coloring wells.
         title: Map title, default 'Field Map'.
-        interactive: If True, creates interactive Folium map. If False, creates static GeoPandas plot, default True.
-        basemap: Basemap style for Folium ('OpenStreetMap', 'Stamen Terrain', 'CartoDB positron'), default 'OpenStreetMap'.
-        use_plotsmith: If True, use PlotSmith styling for static maps (if available). If None, auto-detect.
+        interactive: If True, creates interactive Folium map. If False,
+            creates static GeoPandas plot, default True.
+        basemap: Basemap style for Folium ('OpenStreetMap', 'Stamen Terrain',
+            'CartoDB positron'), default 'OpenStreetMap'.
+        use_plotsmith: If True, use PlotSmith styling for static maps
+            (if available). If None, auto-detect.
 
     Returns:
         Folium map object (interactive) or matplotlib Figure (static).
@@ -2187,7 +2237,11 @@ def _create_folium_map(
         lat = float(row[y_col])
         lon = float(row[x_col])
 
-        well_name = row[well_name_col] if well_name_col and well_name_col in row.index else f"Well {idx}"
+        well_name = (
+            row[well_name_col]
+            if well_name_col and well_name_col in row.index
+            else f"Well {idx}"
+        )
 
         # Determine color
         if color_by and color_by in wells_df.columns:
@@ -2275,7 +2329,11 @@ def _create_geopandas_map(
             markersize=100,
             legend=True,
             legend_kwds={"label": color_by, "shrink": 0.8},
-            cmap="viridis" if pd.api.types.is_numeric_dtype(wells_df[color_by]) else "Set3",
+            cmap=(
+                "viridis"
+                if pd.api.types.is_numeric_dtype(wells_df[color_by])
+                else "Set3"
+            ),
             edgecolor="black",
             linewidth=1.5,
         )
@@ -2322,7 +2380,8 @@ def create_well_trajectory_map(
 ) -> Any:
     """Create a map showing well trajectories in 3D or 2D projection.
 
-    Uses Plotly for interactive 3D plots or matplotlib with PlotSmith styling for static 2D plots.
+    Uses Plotly for interactive 3D plots or matplotlib with PlotSmith styling
+    for static 2D plots.
 
     Args:
         trajectories: List of trajectory dictionaries, each containing:
@@ -2330,8 +2389,10 @@ def create_well_trajectory_map(
             - 'x', 'y', 'z': Arrays of coordinates
             - Optional: 'color', 'log_values', 'facies'
         title: Map title, default 'Well Trajectories'.
-        interactive: If True, creates interactive 3D Plotly plot. If False, creates 2D matplotlib plot, default True.
-        use_plotsmith: If True, use PlotSmith styling for static plots (if available). If None, auto-detect.
+        interactive: If True, creates interactive 3D Plotly plot. If False,
+            creates 2D matplotlib plot, default True.
+        use_plotsmith: If True, use PlotSmith styling for static plots
+            (if available). If None, auto-detect.
 
     Returns:
         Plotly Figure (interactive 3D) or matplotlib Figure (static 2D).
@@ -2470,7 +2531,6 @@ def _create_2d_trajectory_map(
     return fig
 
 
-
 # =============================================================================
 # 3D Visualization (Plotly)
 # =============================================================================
@@ -2560,12 +2620,7 @@ def create_3d_well_log_viewer(
         z_values = df[depth_col].values
 
     # Get spatial coordinates if available
-    has_spatial = (
-        x_col
-        and y_col
-        and x_col in df.columns
-        and y_col in df.columns
-    )
+    has_spatial = x_col and y_col and x_col in df.columns and y_col in df.columns
 
     fig = go.Figure()
 
@@ -2603,9 +2658,7 @@ def create_3d_well_log_viewer(
                 + "Y: %{y:.2f}<br>"
                 + "Z: %{z:.2f}<br>"
                 + "<extra></extra>",
-                text=[
-                    f"{log_cols[0]}: {v:.2f}" for v in df[log_cols[0]].values
-                ],
+                text=[f"{log_cols[0]}: {v:.2f}" for v in df[log_cols[0]].values],
             )
         )
     else:
@@ -2636,9 +2689,8 @@ def create_3d_well_log_viewer(
             )
 
     # Update layout
-    title_text = (
-        title
-        or (f"3D Well Log Viewer - {well_name}" if well_name else "3D Well Log Viewer")
+    title_text = title or (
+        f"3D Well Log Viewer - {well_name}" if well_name else "3D Well Log Viewer"
     )
 
     fig.update_layout(
@@ -2755,7 +2807,10 @@ def create_multi_well_3d_viewer(
             colors = color_values
             show_colorbar = True
         else:
-            colors = f"rgb({well_idx * 50 % 255}, {well_idx * 100 % 255}, {well_idx * 150 % 255})"
+            colors = (
+                f"rgb({well_idx * 50 % 255}, "
+                f"{well_idx * 100 % 255}, {well_idx * 150 % 255})"
+            )
             show_colorbar = False
 
         fig.add_trace(
@@ -2771,9 +2826,7 @@ def create_multi_well_3d_viewer(
                     colorbar=dict(title=log_col) if show_colorbar else None,
                     colorscale="Viridis" if show_colorbar else None,
                 ),
-                line=dict(
-                    color=colors if isinstance(colors, str) else "gray", width=3
-                ),
+                line=dict(color=colors if isinstance(colors, str) else "gray", width=3),
                 name=well_name,
                 hovertemplate=f"<b>{well_name}</b><br>"
                 + "X: %{x:.2f}<br>"
@@ -2818,7 +2871,8 @@ def create_cross_section_viewer(
             - 'df': DataFrame with well log data
             - 'name': Well name (optional)
             - 'x', 'y': Well coordinates
-        section_azimuth: Azimuth of the cross section in degrees (0 = North), default 0.0.
+        section_azimuth: Azimuth of the cross section in degrees
+            (0 = North), default 0.0.
         depth_col: Column name for depth, default 'DEPTH'.
         log_col: Log column to display, default 'GR'.
         facies_col: Optional facies column for color coding.
@@ -2932,4 +2986,3 @@ def create_cross_section_viewer(
     )
 
     return fig
-

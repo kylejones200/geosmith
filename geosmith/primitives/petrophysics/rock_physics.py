@@ -1,4 +1,5 @@
-"""Geosmith petrophysics: Rock physics calculations (Gassmann, fluid properties, porosity)
+"""Geosmith petrophysics: Rock physics calculations
+(Gassmann, fluid properties, porosity)
 
 Migrated from geosuite.petro.
 Layer 2: Primitives - Pure operations.
@@ -9,6 +10,7 @@ from typing import TYPE_CHECKING, Optional, Union
 import numpy as np
 
 from geosmith.primitives.petrophysics._common import logger, njit
+
 
 def gassmann_fluid_substitution(
     k_sat_initial: Union[np.ndarray, float],
@@ -23,7 +25,8 @@ def gassmann_fluid_substitution(
     Gassmann's equation predicts how bulk modulus changes when pore fluid
     is replaced, assuming constant pore pressure and no chemical interactions.
 
-    K_sat_final = K_dry + (1 - K_dry/K_mineral)^2 / (phi/K_fluid_final + (1-phi)/K_mineral - K_dry/K_mineral^2)
+    K_sat_final = K_dry + (1 - K_dry/K_mineral)^2 /
+        (phi/K_fluid_final + (1-phi)/K_mineral - K_dry/K_mineral^2)
 
     Args:
         k_sat_initial: Initial saturated bulk modulus (GPa).
@@ -96,12 +99,11 @@ def gassmann_fluid_substitution(
         if check_result:
             logger.warning(f"Found {check_name}, results may be invalid")
 
-    logger.debug(
-        f"Performing Gassmann fluid substitution for {len(phi)} samples"
-    )
+    logger.debug(f"Performing Gassmann fluid substitution for {len(phi)} samples")
 
     # Gassmann's equation
-    # K_sat = K_dry + (1 - K_dry/K_mineral)^2 / (phi/K_fluid + (1-phi)/K_mineral - K_dry/K_mineral^2)
+    # K_sat = K_dry + (1 - K_dry/K_mineral)^2 /
+    # (phi/K_fluid + (1-phi)/K_mineral - K_dry/K_mineral^2)
     with np.errstate(divide="ignore", invalid="ignore"):
         # Calculate denominator
         term1 = phi / k_fluid_final
@@ -207,7 +209,8 @@ def calculate_density_from_velocity(
     Args:
         vp: P-wave velocity (m/s).
         vs: S-wave velocity (m/s). If provided, uses more accurate method.
-        method: Method to use: "gardner", "nafe_drake", or "brocher" (default "gardner").
+        method: Method to use: "gardner", "nafe_drake", or "brocher"
+            (default "gardner").
 
     Returns:
         Estimated density (g/cc).
@@ -267,7 +270,9 @@ def calculate_velocities_from_slowness(
         Tuple of (VP, VS) arrays in m/s.
 
     Example:
-        >>> from geosmith.primitives.petrophysics import calculate_velocities_from_slowness
+        >>> from geosmith.primitives.petrophysics import (
+        ...     calculate_velocities_from_slowness
+        ... )
         >>>
         >>> dtc = np.array([100, 120, 140])  # μs/ft
         >>> dts = np.array([180, 200, 220])  # μs/ft
@@ -317,7 +322,9 @@ def calculate_porosity_from_density(
     Example:
         >>> from geosmith.primitives.petrophysics import calculate_porosity_from_density
         >>>
-        >>> phi = calculate_porosity_from_density(rhob=2.4, rho_matrix=2.65, rho_fluid=1.0)
+        >>> phi = calculate_porosity_from_density(
+        ...     rhob=2.4, rho_matrix=2.65, rho_fluid=1.0
+        ... )
         >>> print(f"Porosity: {phi:.2f}")
     """
     rhob = np.asarray(rhob, dtype=float)

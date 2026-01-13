@@ -12,3 +12,4 @@ Each layer imports only from layers below it. This separation keeps spatial logi
 
 GeoSmith stands alone but integrates cleanly with the rest of the smith ecosystem. When time enters the problem, GeoSmith uses shared typing from Timesmith rather than inventing new conventions.
 
+

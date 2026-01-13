@@ -60,7 +60,8 @@ class VariogramModel:
         """Validate VariogramModel parameters."""
         if self.model_type not in ("spherical", "exponential", "gaussian", "linear"):
             raise ValueError(
-                f"model_type must be one of 'spherical', 'exponential', 'gaussian', 'linear', "
+                f"model_type must be one of 'spherical', 'exponential', "
+                f"'gaussian', 'linear', "
                 f"got {self.model_type}"
             )
 
@@ -68,9 +69,7 @@ class VariogramModel:
             raise ValueError(f"nugget must be non-negative, got {self.nugget}")
 
         if self.sill < self.nugget:
-            raise ValueError(
-                f"sill ({self.sill}) must be >= nugget ({self.nugget})"
-            )
+            raise ValueError(f"sill ({self.sill}) must be >= nugget ({self.nugget})")
 
         if self.range_param <= 0 and self.model_type != "linear":
             raise ValueError(
@@ -106,9 +105,7 @@ def _spherical_model(
     mask = h < range_param
     if np.any(mask):
         h_scaled = h[mask] / range_param
-        gamma[mask] = nugget + (sill - nugget) * (
-            1.5 * h_scaled - 0.5 * h_scaled**3
-        )
+        gamma[mask] = nugget + (sill - nugget) * (1.5 * h_scaled - 0.5 * h_scaled**3)
 
     gamma[~mask] = sill
     return gamma
@@ -243,15 +240,14 @@ def compute_experimental_variogram(
         )
 
     if len(values) < 10:
-        raise ValueError(
-            f"Need at least 10 samples for variogram, got {len(values)}"
-        )
+        raise ValueError(f"Need at least 10 samples for variogram, got {len(values)}")
 
     # Determine lag bins
     if max_lag is None:
         if not SCIPY_AVAILABLE:
             raise ImportError(
-                "scipy is required for variogram analysis. Install with: pip install geosmith[primitives] or pip install scipy"
+                "scipy is required for variogram analysis. Install with: "
+                "pip install geosmith[primitives] or pip install scipy"
             )
         from scipy.spatial.distance import pdist
 
@@ -284,7 +280,8 @@ def compute_experimental_variogram(
         # Fallback to scipy pdist
         if not SCIPY_AVAILABLE:
             raise ImportError(
-                "scipy is required for variogram analysis. Install with: pip install geosmith[primitives] or pip install scipy"
+                "scipy is required for variogram analysis. Install with: "
+                "pip install geosmith[primitives] or pip install scipy"
             )
         from scipy.spatial.distance import pdist
 
@@ -358,7 +355,8 @@ def fit_variogram_model(
         try:
             if not SCIPY_AVAILABLE:
                 raise ImportError(
-                    "scipy is required for variogram fitting. Install with: pip install geosmith[primitives] or pip install scipy"
+                    "scipy is required for variogram fitting. Install with: "
+                    "pip install geosmith[primitives] or pip install scipy"
                 )
             popt, _ = curve_fit(
                 lambda h, n, s: _linear_model(h, n, s),
@@ -382,7 +380,8 @@ def fit_variogram_model(
         try:
             if not SCIPY_AVAILABLE:
                 raise ImportError(
-                    "scipy is required for variogram fitting. Install with: pip install geosmith[primitives] or pip install scipy"
+                    "scipy is required for variogram fitting. Install with: "
+                    "pip install geosmith[primitives] or pip install scipy"
                 )
             popt, _ = curve_fit(
                 model_func,
@@ -401,7 +400,11 @@ def fit_variogram_model(
             partial_sill = sill - nugget
 
     # Compute R²
-    predicted = model_func(lags, nugget, sill, range_param) if model_type != "linear" else _linear_model(lags, nugget, (sill - nugget) / range_param)
+    predicted = (
+        model_func(lags, nugget, sill, range_param)
+        if model_type != "linear"
+        else _linear_model(lags, nugget, (sill - nugget) / range_param)
+    )
     ss_res = np.sum((semi_variances - predicted) ** 2)
     ss_tot = np.sum((semi_variances - np.mean(semi_variances)) ** 2)
     r_squared = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0.0
@@ -440,4 +443,3 @@ def predict_variogram(
             variogram_model.sill,
             variogram_model.range_param,
         )
-

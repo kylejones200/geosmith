@@ -79,4 +79,3 @@ __all__ = [
     "write_vector",
     "zonal_stats",
 ]
-
