@@ -19,6 +19,7 @@ dependencies = [
   "numpy>=1.24.0",
   "pandas>=2.0.0",
   "timesmith>=0.1.0",  # Required for SeriesLike, PanelLike, TableLike typing
+  "networkx>=3.0",  # Required by timesmith.network module
 ]
 
 [project.optional-dependencies]
