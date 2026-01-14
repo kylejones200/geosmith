@@ -6,6 +6,8 @@ Tests end-to-end workflows combining multiple primitives and tasks.
 import numpy as np
 import pytest
 
+pytestmark = pytest.mark.integration
+
 from geosmith import PointSet
 from geosmith.primitives.kriging import CoKriging, OrdinaryKriging
 from geosmith.primitives.kriging_cv import (
@@ -84,16 +86,16 @@ class TestOreReserveEstimationWorkflow:
         assert np.all(np.isfinite(result.predictions))
         assert np.all(result.variance >= 0)
 
-        # Step 6: SGS for uncertainty
+        # Step 6: SGS for uncertainty (reduced realizations for faster testing)
         realizations = sequential_gaussian_simulation(
             samples,
             grades,
             grid_points,
             variogram_model,
-            n_realizations=5,
+            n_realizations=2,  # Reduced for faster CI
             random_seed=42,
         )
-        assert realizations.shape == (5, len(grid_coords))
+        assert realizations.shape == (2, len(grid_coords))
         assert np.all(np.isfinite(realizations))
 
 

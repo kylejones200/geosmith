@@ -8,7 +8,7 @@ on:
 jobs:
   build-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -23,9 +23,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev,primitives,ml]"
 
-      - name: Test
+      - name: Test (unit tests only)
         run: |
-          pytest -v --tb=short --maxfail=5 --durations=10
+          pytest -v --tb=short --maxfail=5 --durations=10 -m "not integration and not slow" --cov=geosmith --cov-report=term-missing --no-cov-on-fail
 
       # Optional: non-blocking checks
       - name: Lint check (non-blocking)

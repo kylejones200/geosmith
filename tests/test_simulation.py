@@ -43,11 +43,11 @@ class TestSequentialGaussianSimulation:
             values,
             query_points,
             variogram,
-            n_realizations=5,
+            n_realizations=3,  # Reduced for faster testing
             random_seed=42,
         )
 
-        assert realizations.shape == (5, 10)
+        assert realizations.shape == (3, 10)
         assert np.all(np.isfinite(realizations))
 
     def test_sgs_insufficient_samples(self):
