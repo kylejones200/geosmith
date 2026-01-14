@@ -6,8 +6,6 @@ Creates features that capture both pointwise log values and contextual patterns.
 
 Implements feature extraction strategies described in automated well log
 interpretation workflows.
-
-Performance: Numba-accelerated for 10-30x speedup on spatial features.
 """
 
 from collections.abc import Callable
@@ -38,11 +36,7 @@ def _compute_weighted_average_fast(
     weights: np.ndarray,
     null_value: float,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """
-    Numba-accelerated inverse-distance weighted averaging.
-
-    10-30x faster than pure Python loops for large datasets.
-    """
+    """Numba-accelerated inverse-distance weighted averaging."""
     n_wells = offset_array.shape[0]
     n_depths = offset_array.shape[1]
 
@@ -428,7 +422,6 @@ class LogFeatureEngineer:
             # Compute weighted average using Numba acceleration
             offset_array = np.array(offset_values)
 
-            # Use Numba-accelerated computation (10-30x faster)
             if NUMBA_AVAILABLE:
                 weighted_avg, spatial_std = _compute_weighted_average_fast(
                     offset_array, weights, self.null_value

@@ -1657,7 +1657,6 @@ def create_interactive_kriging_map(
         control=True,
     ).add_to(m)
 
-    # Sample grid points for performance
     grid_lon_sampled = grid_lon[::sample_step]
     grid_lat_sampled = grid_lat[::sample_step]
 
@@ -1706,7 +1705,6 @@ def create_interactive_kriging_map(
         coordinates = np.asarray(coordinates)
         values = np.asarray(values)
 
-        # Sample wells for performance
         n_wells = min(max_wells, len(coordinates))
         if n_wells < len(coordinates):
             indices = np.random.choice(len(coordinates), n_wells, replace=False)
@@ -2041,7 +2039,6 @@ def create_combined_map(
         if len(coordinates) == 0:
             continue
 
-        # Sample for performance
         n_samples = min(max_samples, len(coordinates))
         if n_samples < len(coordinates):
             indices = np.random.choice(len(coordinates), n_samples, replace=False)

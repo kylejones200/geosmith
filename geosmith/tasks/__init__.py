@@ -5,114 +5,89 @@ Tasks must not import matplotlib. Tasks can import geopandas and rasterio if
 present, but keep these imports optional and isolated.
 """
 
+from geosmith.utils.optional_imports import optional_import
 from geosmith.tasks.blockmodeltask import BlockModelTask, create_block_model_grid
 from geosmith.tasks.changetask import ChangeTask
 from geosmith.tasks.featuretask import FeatureTask
 from geosmith.tasks.rastertask import RasterTask
-
-# Optional stratigraphy (requires ruptures and scipy)
-try:
-    from geosmith.tasks.stratigraphy import (
-        ChangePointResult,
-        StratigraphyTask,
-        detect_bayesian_online,
-        detect_pelt,
-        preprocess_log,
-    )
-
-    STRATIGRAPHY_AVAILABLE = True
-except ImportError:
-    STRATIGRAPHY_AVAILABLE = False
-    ChangePointResult = None  # type: ignore
-    StratigraphyTask = None  # type: ignore
-    detect_bayesian_online = None  # type: ignore
-    detect_pelt = None  # type: ignore
-    preprocess_log = None  # type: ignore
 from geosmith.tasks.routetask import RouteTask
 
-# Optional surrogate models (requires scikit-learn, xgboost)
-try:
-    from geosmith.tasks.surrogatetask import SurrogateTask
+# Optional stratigraphy (requires ruptures and scipy)
+STRATIGRAPHY_AVAILABLE, _strat = optional_import(
+    "geosmith.tasks.stratigraphy",
+    [
+        "ChangePointResult",
+        "StratigraphyTask",
+        "detect_bayesian_online",
+        "detect_pelt",
+        "preprocess_log",
+    ],
+)
+ChangePointResult = _strat["ChangePointResult"]  # type: ignore
+StratigraphyTask = _strat["StratigraphyTask"]  # type: ignore
+detect_bayesian_online = _strat["detect_bayesian_online"]  # type: ignore
+detect_pelt = _strat["detect_pelt"]  # type: ignore
+preprocess_log = _strat["preprocess_log"]  # type: ignore
 
-    SURROGATE_AVAILABLE = True
-except ImportError:
-    SURROGATE_AVAILABLE = False
-    SurrogateTask = None  # type: ignore
+# Optional surrogate models (requires scikit-learn, xgboost)
+SURROGATE_AVAILABLE, _surrogate = optional_import(
+    "geosmith.tasks.surrogatetask", ["SurrogateTask"]
+)
+SurrogateTask = _surrogate["SurrogateTask"]  # type: ignore
 
 # Optional NLP (requires spacy or transformers)
-try:
-    from geosmith.tasks.nlptask import (
-        ChronostratNER,
-        EntityMatch,
-        NERResult,
-        extract_chronostrat_entities,
-    )
-
-    NLP_AVAILABLE = True
-except ImportError:
-    NLP_AVAILABLE = False
-    ChronostratNER = None  # type: ignore
-    EntityMatch = None  # type: ignore
-    NERResult = None  # type: ignore
-    extract_chronostrat_entities = None  # type: ignore
+NLP_AVAILABLE, _nlp = optional_import(
+    "geosmith.tasks.nlptask",
+    ["ChronostratNER", "EntityMatch", "NERResult", "extract_chronostrat_entities"],
+)
+ChronostratNER = _nlp["ChronostratNER"]  # type: ignore
+EntityMatch = _nlp["EntityMatch"]  # type: ignore
+NERResult = _nlp["NERResult"]  # type: ignore
+extract_chronostrat_entities = _nlp["extract_chronostrat_entities"]  # type: ignore
 
 # Optional facies classification (requires scikit-learn)
-try:
-    from geosmith.tasks.faciestask import FaciesResult, FaciesTask
-
-    FACIES_AVAILABLE = True
-except ImportError:
-    FACIES_AVAILABLE = False
-    FaciesResult = None  # type: ignore
-    FaciesTask = None  # type: ignore
+FACIES_AVAILABLE, _facies = optional_import(
+    "geosmith.tasks.faciestask", ["FaciesResult", "FaciesTask"]
+)
+FaciesResult = _facies["FaciesResult"]  # type: ignore
+FaciesTask = _facies["FaciesTask"]  # type: ignore
 
 # Optional clustering (requires scikit-learn)
-try:
-    from geosmith.tasks.clusteringtask import (
-        FaciesClusterer,
-        cluster_facies,
-        find_optimal_clusters,
-    )
-
-    CLUSTERING_AVAILABLE = True
-except ImportError:
-    CLUSTERING_AVAILABLE = False
-    FaciesClusterer = None  # type: ignore
-    cluster_facies = None  # type: ignore
-    find_optimal_clusters = None  # type: ignore
+CLUSTERING_AVAILABLE, _clustering = optional_import(
+    "geosmith.tasks.clusteringtask",
+    ["FaciesClusterer", "cluster_facies", "find_optimal_clusters"],
+)
+FaciesClusterer = _clustering["FaciesClusterer"]  # type: ignore
+cluster_facies = _clustering["cluster_facies"]  # type: ignore
+find_optimal_clusters = _clustering["find_optimal_clusters"]  # type: ignore
 
 # Optional regression (requires scikit-learn)
-try:
-    from geosmith.tasks.regressiontask import PermeabilityPredictor, PorosityPredictor
-
-    REGRESSION_AVAILABLE = True
-except ImportError:
-    REGRESSION_AVAILABLE = False
-    PermeabilityPredictor = None  # type: ignore
-    PorosityPredictor = None  # type: ignore
+REGRESSION_AVAILABLE, _regression = optional_import(
+    "geosmith.tasks.regressiontask", ["PermeabilityPredictor", "PorosityPredictor"]
+)
+PermeabilityPredictor = _regression["PermeabilityPredictor"]  # type: ignore
+PorosityPredictor = _regression["PorosityPredictor"]  # type: ignore
 
 # Optional decline curve analysis (requires scipy)
-try:
-    from geosmith.tasks.declinetask import (
-        DeclineModel,
-        ExponentialDecline,
-        HarmonicDecline,
-        HyperbolicDecline,
-        fit_decline_model,
-        forecast_production,
-        process_wells_parallel,
-    )
-
-    DECLINE_AVAILABLE = True
-except ImportError:
-    DECLINE_AVAILABLE = False
-    DeclineModel = None  # type: ignore
-    ExponentialDecline = None  # type: ignore
-    HarmonicDecline = None  # type: ignore
-    HyperbolicDecline = None  # type: ignore
-    fit_decline_model = None  # type: ignore
-    forecast_production = None  # type: ignore
-    process_wells_parallel = None  # type: ignore
+DECLINE_AVAILABLE, _decline = optional_import(
+    "geosmith.tasks.declinetask",
+    [
+        "DeclineModel",
+        "ExponentialDecline",
+        "HarmonicDecline",
+        "HyperbolicDecline",
+        "fit_decline_model",
+        "forecast_production",
+        "process_wells_parallel",
+    ],
+)
+DeclineModel = _decline["DeclineModel"]  # type: ignore
+ExponentialDecline = _decline["ExponentialDecline"]  # type: ignore
+HarmonicDecline = _decline["HarmonicDecline"]  # type: ignore
+HyperbolicDecline = _decline["HyperbolicDecline"]  # type: ignore
+fit_decline_model = _decline["fit_decline_model"]  # type: ignore
+forecast_production = _decline["forecast_production"]  # type: ignore
+process_wells_parallel = _decline["process_wells_parallel"]  # type: ignore
 
 # Optional cross-validation (requires scikit-learn)
 try:

@@ -36,9 +36,7 @@ def calculate_overburden_stress_parallel(
     """Calculate overburden stress for multiple wells in parallel.
 
     This function uses Numba's parallel execution to process multiple wells
-    simultaneously, providing near-linear speedup with CPU core count.
-
-    Performance: With 4 cores, expect ~3.5x speedup over sequential processing.
+    simultaneously.
 
     Args:
         depths_list: List of depth arrays (meters), one per well.
@@ -95,8 +93,6 @@ def process_well_array_parallel(
     """Apply statistical operation across multiple wells in parallel.
 
     This is a general-purpose parallel processor for well data arrays.
-
-    Performance: Linear speedup with CPU cores (4x on 4-core machine).
 
     Args:
         data_array: 2D array (n_wells x n_samples).

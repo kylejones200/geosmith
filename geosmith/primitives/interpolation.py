@@ -245,7 +245,6 @@ def compute_idw_residuals(
     idw_predictions = np.zeros(n_samples, dtype=np.float64)
 
     if leave_one_out:
-        # True leave-one-out (more accurate but slower)
         for i in range(n_process):
             # Leave out sample i
             coords_train = np.delete(coords, i, axis=0)
@@ -267,7 +266,6 @@ def compute_idw_residuals(
                 sample_points, values, query_points_all, k=k, power=power
             )
     else:
-        # Use full IDW for all samples (faster but biased)
         query_points_all = PointSet(coordinates=coords)
         idw_predictions = idw_interpolate(
             sample_points, values, query_points_all, k=k, power=power

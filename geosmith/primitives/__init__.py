@@ -90,13 +90,39 @@ from geosmith.primitives.interpolation import (
 
 # Optional kriging (requires scipy)
 try:
-    from geosmith.primitives.kriging import KrigingResult, OrdinaryKriging
+    from geosmith.primitives.kriging import (
+        CoKriging,
+        IndicatorKriging,
+        KrigingResult,
+        OrdinaryKriging,
+        SimpleKriging,
+        UniversalKriging,
+    )
 
     KRIGING_AVAILABLE = True
 except ImportError:
     KRIGING_AVAILABLE = False
+    CoKriging = None  # type: ignore
+    IndicatorKriging = None  # type: ignore
     KrigingResult = None  # type: ignore
     OrdinaryKriging = None  # type: ignore
+    SimpleKriging = None  # type: ignore
+    UniversalKriging = None  # type: ignore
+
+# Optional kriging cross-validation (requires scipy, optional sklearn)
+try:
+    from geosmith.primitives.kriging_cv import (
+        CrossValidationResult,
+        k_fold_cross_validation,
+        leave_one_out_cross_validation,
+    )
+
+    KRIGING_CV_AVAILABLE = True
+except ImportError:
+    KRIGING_CV_AVAILABLE = False
+    CrossValidationResult = None  # type: ignore
+    k_fold_cross_validation = None  # type: ignore
+    leave_one_out_cross_validation = None  # type: ignore
 
 # Petrophysics imports (required, not optional)
 try:
@@ -133,6 +159,31 @@ except ImportError as e:
         f"Check that geosmith.primitives.petrophysics.water_saturation can be imported."
     ) from e
 from geosmith.primitives.raster import grid_resample, zonal_reduce
+
+# Optional data quality tools (requires scipy, optional sklearn)
+try:
+    from geosmith.primitives.data_quality import (
+        QualityFlags,
+        compute_quality_flags,
+        detect_duplicate_samples,
+        detect_missing_values,
+        detect_spatial_outliers,
+        filter_by_quality,
+        impute_missing_spatial,
+        validate_coordinates,
+    )
+
+    DATA_QUALITY_AVAILABLE = True
+except ImportError:
+    DATA_QUALITY_AVAILABLE = False
+    QualityFlags = None  # type: ignore
+    compute_quality_flags = None  # type: ignore
+    detect_duplicate_samples = None  # type: ignore
+    detect_missing_values = None  # type: ignore
+    detect_spatial_outliers = None  # type: ignore
+    filter_by_quality = None  # type: ignore
+    impute_missing_spatial = None  # type: ignore
+    validate_coordinates = None  # type: ignore
 
 # Optional seismic processing (requires scipy)
 try:
@@ -187,10 +238,59 @@ except ImportError:
     train_simulation_emulator = None  # type: ignore
 from geosmith.primitives.variogram import (
     VariogramModel,
+    compute_experimental_cross_variogram,
     compute_experimental_variogram,
     fit_variogram_model,
     predict_variogram,
 )
+
+# Optional advanced variogram models (nested structures, anisotropy)
+try:
+    from geosmith.primitives.variogram_advanced import (
+        AnisotropicVariogramModel,
+        NestedVariogramModel,
+        ZonalAnisotropyModel,
+        compute_directional_variogram,
+        fit_nested_variogram,
+    )
+
+    ADVANCED_VARIOGRAM_AVAILABLE = True
+except ImportError:
+    ADVANCED_VARIOGRAM_AVAILABLE = False
+    AnisotropicVariogramModel = None  # type: ignore
+    NestedVariogramModel = None  # type: ignore
+    ZonalAnisotropyModel = None  # type: ignore
+    compute_directional_variogram = None  # type: ignore
+    fit_nested_variogram = None  # type: ignore
+
+# Optional spatial analysis (requires scipy)
+try:
+    from geosmith.primitives.spatial_analysis import (
+        GearyResult,
+        HotspotResult,
+        MoranResult,
+        SpatialWeights,
+        create_distance_weights,
+        create_knn_weights,
+        create_queen_weights,
+        gearys_c,
+        getis_ord_gi_star,
+        morans_i,
+    )
+
+    SPATIAL_ANALYSIS_AVAILABLE = True
+except ImportError:
+    SPATIAL_ANALYSIS_AVAILABLE = False
+    GearyResult = None  # type: ignore
+    HotspotResult = None  # type: ignore
+    MoranResult = None  # type: ignore
+    SpatialWeights = None  # type: ignore
+    create_distance_weights = None  # type: ignore
+    create_knn_weights = None  # type: ignore
+    create_queen_weights = None  # type: ignore
+    gearys_c = None  # type: ignore
+    getis_ord_gi_star = None  # type: ignore
+    morans_i = None  # type: ignore
 
 # Optional production analysis (requires pandas - usually available)
 try:
@@ -266,9 +366,17 @@ __all__ = [
     "invert_stress_from_dif",
     "mohr_coulomb_failure",
     "mud_weight_equivalent",
+    "CoKriging",
     "compute_exceedance_probability",
+    "compute_experimental_cross_variogram",
     "compute_experimental_variogram",
+    "compute_quality_flags",
     "compute_simulation_statistics",
+    "detect_duplicate_samples",
+    "detect_missing_values",
+    "detect_spatial_outliers",
+    "filter_by_quality",
+    "impute_missing_spatial",
     "exp_transform",
     "fit_variogram_model",
     "log_transform",
@@ -283,6 +391,7 @@ __all__ = [
     "pickett_isolines",
     "point_in_polygon",
     "polygon_area",
+    "QualityFlags",
     "_calculate_overburden_stress_kernel",
     "_calculate_pressure_gradient_kernel",
     "calculate_overburden_stress_parallel",

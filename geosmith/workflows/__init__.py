@@ -5,6 +5,7 @@ I/O libraries and plotting libraries. Put file loading and saving here.
 Put plotting here.
 """
 
+from geosmith.utils.optional_imports import optional_import
 from geosmith.workflows.drillhole import (
     compute_3d_coordinates,
     find_column,
@@ -13,54 +14,38 @@ from geosmith.workflows.drillhole import (
 )
 
 # Optional DLIS support (requires dlisio)
-try:
-    from geosmith.workflows.dlis import DlisParser, read_dlis_file
+DLIS_AVAILABLE, _dlis = optional_import(
+    "geosmith.workflows.dlis", ["DlisParser", "read_dlis_file"]
+)
+DlisParser = _dlis["DlisParser"]  # type: ignore
+read_dlis_file = _dlis["read_dlis_file"]  # type: ignore
 
-    DLIS_AVAILABLE = True
-except ImportError:
-    DLIS_AVAILABLE = False
-    DlisParser = None  # type: ignore
-    read_dlis_file = None  # type: ignore
 # Optional RESQML support (requires resqpy)
-try:
-    from geosmith.workflows.resqml import (
-        read_resqml_grid,
-        read_resqml_properties,
-        ResqmlParser,
-    )
+RESQML_AVAILABLE, _resqml = optional_import(
+    "geosmith.workflows.resqml",
+    ["read_resqml_grid", "read_resqml_properties", "ResqmlParser"],
+)
+read_resqml_grid = _resqml["read_resqml_grid"]  # type: ignore
+read_resqml_properties = _resqml["read_resqml_properties"]  # type: ignore
+ResqmlParser = _resqml["ResqmlParser"]  # type: ignore
 
-    RESQML_AVAILABLE = True
-except ImportError:
-    RESQML_AVAILABLE = False
-    ResqmlParser = None  # type: ignore
-    read_resqml_grid = None  # type: ignore
-    read_resqml_properties = None  # type: ignore
 # Optional WITSML support (requires xml.etree.ElementTree, typically available)
-try:
-    from geosmith.workflows.witsml import (
-        read_witsml_log,
-        read_witsml_trajectory,
-        read_witsml_well,
-        WitsmlParser,
-    )
+WITSML_AVAILABLE, _witsml = optional_import(
+    "geosmith.workflows.witsml",
+    ["read_witsml_log", "read_witsml_trajectory", "read_witsml_well", "WitsmlParser"],
+)
+read_witsml_log = _witsml["read_witsml_log"]  # type: ignore
+read_witsml_trajectory = _witsml["read_witsml_trajectory"]  # type: ignore
+read_witsml_well = _witsml["read_witsml_well"]  # type: ignore
+WitsmlParser = _witsml["WitsmlParser"]  # type: ignore
 
-    WITSML_AVAILABLE = True
-except ImportError:
-    WITSML_AVAILABLE = False
-    WitsmlParser = None  # type: ignore
-    read_witsml_well = None  # type: ignore
-    read_witsml_log = None  # type: ignore
-    read_witsml_trajectory = None  # type: ignore
 # Optional PPDM support
-try:
-    from geosmith.workflows.ppdm import PpdmDataModel, PpdmParser, read_ppdm_csv
-
-    PPDM_AVAILABLE = True
-except ImportError:
-    PPDM_AVAILABLE = False
-    PpdmDataModel = None  # type: ignore
-    PpdmParser = None  # type: ignore
-    read_ppdm_csv = None  # type: ignore
+PPDM_AVAILABLE, _ppdm = optional_import(
+    "geosmith.workflows.ppdm", ["PpdmDataModel", "PpdmParser", "read_ppdm_csv"]
+)
+PpdmDataModel = _ppdm["PpdmDataModel"]  # type: ignore
+PpdmParser = _ppdm["PpdmParser"]  # type: ignore
+read_ppdm_csv = _ppdm["read_ppdm_csv"]  # type: ignore
 from geosmith.workflows.grdecl import (
     export_block_model,
     read_grdecl,
@@ -82,21 +67,28 @@ from geosmith.workflows.segy import (
 )
 
 # Optional NLP workflows (requires spacy or transformers)
-try:
-    from geosmith.workflows.nlp import (
-        extract_entities_from_file,
-        load_entity_list,
-        load_text_documents,
-        train_custom_ner_model,
-    )
-
-    NLP_AVAILABLE = True
-except ImportError:
-    NLP_AVAILABLE = False
-    extract_entities_from_file = None  # type: ignore
-    load_entity_list = None  # type: ignore
-    load_text_documents = None  # type: ignore
-    train_custom_ner_model = None  # type: ignore
+NLP_AVAILABLE, _nlp = optional_import(
+    "geosmith.workflows.nlp",
+    [
+        "extract_entities_from_file",
+        "load_entity_list",
+        "load_text_documents",
+        "train_custom_ner_model",
+    ],
+)
+extract_entities_from_file = _nlp["extract_entities_from_file"]  # type: ignore
+load_entity_list = _nlp["load_entity_list"]  # type: ignore
+load_text_documents = _nlp["load_text_documents"]  # type: ignore
+train_custom_ner_model = _nlp["train_custom_ner_model"]  # type: ignore
+from geosmith.workflows.geostatistics import (
+    GeostatisticalModel,
+    GeostatisticalResult,
+)
+from geosmith.workflows.gslib import (
+    export_block_model_gslib,
+    read_gslib,
+    write_gslib,
+)
 from geosmith.workflows.workflows import (
     make_features,
     process_raster,
@@ -105,57 +97,55 @@ from geosmith.workflows.workflows import (
 )
 
 # Optional plotting (requires matplotlib)
-try:
-    from geosmith.workflows.plotting import (
-        add_facies_track,
-        add_log_track,
-        buckles_plot,
-        create_3d_well_log_viewer,
-        create_combined_map,
-        create_cross_section_viewer,
-        create_facies_log_plot,
-        create_field_map,
-        create_interactive_kriging_map,
-        create_interactive_well_map,
-        create_multi_well_3d_viewer,
-        create_multi_well_strip_chart,
-        create_strip_chart,
-        create_well_trajectory_map,
-        mineral_composition_plot,
-        neutron_density_crossplot,
-        pickett_plot,
-        plot_mud_weight_profile,
-        plot_pressure_profile,
-        qfl_plot,
-        sand_silt_clay_plot,
-        ternary_plot,
-    )
-
-    PLOTTING_AVAILABLE = True
-except ImportError:
-    PLOTTING_AVAILABLE = False
-    add_facies_track = None  # type: ignore
-    add_log_track = None  # type: ignore
-    buckles_plot = None  # type: ignore
-    create_3d_well_log_viewer = None  # type: ignore
-    create_combined_map = None  # type: ignore
-    create_cross_section_viewer = None  # type: ignore
-    create_facies_log_plot = None  # type: ignore
-    create_field_map = None  # type: ignore
-    create_interactive_kriging_map = None  # type: ignore
-    create_interactive_well_map = None  # type: ignore
-    create_multi_well_3d_viewer = None  # type: ignore
-    create_multi_well_strip_chart = None  # type: ignore
-    create_strip_chart = None  # type: ignore
-    create_well_trajectory_map = None  # type: ignore
-    mineral_composition_plot = None  # type: ignore
-    neutron_density_crossplot = None  # type: ignore
-    pickett_plot = None  # type: ignore
-    plot_mud_weight_profile = None  # type: ignore
-    plot_pressure_profile = None  # type: ignore
-    qfl_plot = None  # type: ignore
-    sand_silt_clay_plot = None  # type: ignore
-    ternary_plot = None  # type: ignore
+PLOTTING_AVAILABLE, _plotting = optional_import(
+    "geosmith.workflows.plotting",
+    [
+        "add_facies_track",
+        "add_log_track",
+        "buckles_plot",
+        "create_3d_well_log_viewer",
+        "create_combined_map",
+        "create_cross_section_viewer",
+        "create_facies_log_plot",
+        "create_field_map",
+        "create_interactive_kriging_map",
+        "create_interactive_well_map",
+        "create_multi_well_3d_viewer",
+        "create_multi_well_strip_chart",
+        "create_strip_chart",
+        "create_well_trajectory_map",
+        "mineral_composition_plot",
+        "neutron_density_crossplot",
+        "pickett_plot",
+        "plot_mud_weight_profile",
+        "plot_pressure_profile",
+        "qfl_plot",
+        "sand_silt_clay_plot",
+        "ternary_plot",
+    ],
+)
+add_facies_track = _plotting["add_facies_track"]  # type: ignore
+add_log_track = _plotting["add_log_track"]  # type: ignore
+buckles_plot = _plotting["buckles_plot"]  # type: ignore
+create_3d_well_log_viewer = _plotting["create_3d_well_log_viewer"]  # type: ignore
+create_combined_map = _plotting["create_combined_map"]  # type: ignore
+create_cross_section_viewer = _plotting["create_cross_section_viewer"]  # type: ignore
+create_facies_log_plot = _plotting["create_facies_log_plot"]  # type: ignore
+create_field_map = _plotting["create_field_map"]  # type: ignore
+create_interactive_kriging_map = _plotting["create_interactive_kriging_map"]  # type: ignore
+create_interactive_well_map = _plotting["create_interactive_well_map"]  # type: ignore
+create_multi_well_3d_viewer = _plotting["create_multi_well_3d_viewer"]  # type: ignore
+create_multi_well_strip_chart = _plotting["create_multi_well_strip_chart"]  # type: ignore
+create_strip_chart = _plotting["create_strip_chart"]  # type: ignore
+create_well_trajectory_map = _plotting["create_well_trajectory_map"]  # type: ignore
+mineral_composition_plot = _plotting["mineral_composition_plot"]  # type: ignore
+neutron_density_crossplot = _plotting["neutron_density_crossplot"]  # type: ignore
+pickett_plot = _plotting["pickett_plot"]  # type: ignore
+plot_mud_weight_profile = _plotting["plot_mud_weight_profile"]  # type: ignore
+plot_pressure_profile = _plotting["plot_pressure_profile"]  # type: ignore
+qfl_plot = _plotting["qfl_plot"]  # type: ignore
+sand_silt_clay_plot = _plotting["sand_silt_clay_plot"]  # type: ignore
+ternary_plot = _plotting["ternary_plot"]  # type: ignore
 
 __all__ = [
     "buckles_plot",

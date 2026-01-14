@@ -32,6 +32,8 @@ from geosmith.tasks import BlockModelTask
 
 # Layer 4: Workflows (public API)
 from geosmith.workflows import (
+    GeostatisticalModel,
+    GeostatisticalResult,
     make_features,
     process_raster,
     read_grdecl,
@@ -68,6 +70,8 @@ __all__ = [
     # Tasks
     "BlockModelTask",
     # Workflows
+    "GeostatisticalModel",
+    "GeostatisticalResult",
     "make_features",
     "process_raster",
     "read_grdecl",

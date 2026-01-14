@@ -37,7 +37,7 @@ except ImportError:
     train_test_split = None  # type: ignore
     StandardScaler = None  # type: ignore
 
-# Optional XGBoost (faster than sklearn for large datasets)
+# Optional XGBoost
 try:
     import xgboost as xgb
 
@@ -46,7 +46,7 @@ except ImportError:
     XGBOOST_AVAILABLE = False
     xgb = None  # type: ignore
 
-# Optional LightGBM (even faster, optional)
+# Optional LightGBM
 try:
     import lightgbm as lgb
 
@@ -106,7 +106,6 @@ class SurrogateModel(BaseSpatialModel):
         ...     training_outputs=simulation_results,  # Simulation outputs
         ... )
         >>>
-        >>> # Fast prediction (100x-1000x faster)
         >>> fast_predictions = surrogate.predict(query_points)
     """
 
@@ -622,15 +621,11 @@ class SurrogateModel(BaseSpatialModel):
 
         speedup = None
         if measure_speedup and self.prediction_time is not None:
-            # TODO: Full speedup measurement would require running simulation_func
-            # on a subset of test_inputs and comparing timing. For now, provide
-            # a conservative estimate based on typical ML surrogate performance.
             logger.info(
                 "Speedup measurement is estimated. For actual speedup, "
                 "run simulation_func "
                 "on test subset and compare timing with surrogate.prediction_time"
             )
-            # Conservative estimate: typical ML surrogates are 100-1000x faster
             speedup = 100.0
 
         metrics = SurrogateMetrics(
