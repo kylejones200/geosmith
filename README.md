@@ -18,14 +18,28 @@
 ## Installation
 
 ```bash
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
 # Core installation
-pip install geosmith
+uv pip install geosmith
 
 # With optional integrations
-pip install geosmith[plotsmith,anomsmith,timesmith]
+uv pip install geosmith[plotsmith,anomsmith,timesmith]
 
 # Everything
-pip install geosmith[all]
+uv pip install geosmith[all]
+```
+
+### Development Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/kylejones200/geosmith.git
+cd geosmith
+
+# Install with uv
+uv sync --group dev
 ```
 
 ## Quick Start
@@ -61,4 +75,3 @@ See [SMITH_FAMILY_INTEGRATION.md](SMITH_FAMILY_INTEGRATION.md) for details.
 - [Architecture](ARCHITECTURE.md) - 4-layer architecture overview
 - [Migration Guide](MIGRATION_GUIDE.md) - Migrating from GeoSuite
 - [Smith Family Integration](SMITH_FAMILY_INTEGRATION.md) - PlotSmith, AnomSmith, TimeSmith integration
-- [GeoSuite Migration Assessment](GEOSUITE_MIGRATION_ASSESSMENT.md) - What's been migrated from GeoSuite

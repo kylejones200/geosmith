@@ -24,14 +24,13 @@ cd geosmith
 ### 2. Set Up Development Environment
 
 ```bash
-# Create a virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Install in development mode with all dependencies
-pip install -e ".[dev,docs,all]"
+# Install dependencies (uv creates and manages the virtual environment)
+uv sync --group dev
 
-# Install pre-commit hooks
+# Install pre-commit hooks (if configured)
 pre-commit install
 ```
 
@@ -46,14 +45,14 @@ git checkout -b feature/your-feature-name
 
 ### Code Style
 
-We use Black for code formatting and flake8 for linting:
+We use Black for code formatting and Ruff for linting:
 
 ```bash
 # Format code
-black geosmith tests
+uv run black geosmith tests
 
 # Check linting
-flake8 geosmith tests
+uv run ruff check .
 ```
 
 Key conventions:
@@ -69,10 +68,10 @@ All new features and bug fixes should include tests:
 
 ```bash
 # Run all tests
-pytest tests/
+uv run pytest tests/
 
 # Run with coverage
-pytest tests/ --cov=geosmith --cov-report=html
+uv run pytest tests/ --cov=geosmith --cov-report=html
 ```
 
 Test guidelines:
@@ -121,10 +120,10 @@ Commit message format:
 
 Before submitting a PR, ensure:
 
-- All tests pass: pytest tests/
-- Code is formatted: black geosmith tests
-- Linting passes: flake8 geosmith tests
-- Documentation builds: mkdocs build
+- All tests pass: `uv run pytest tests/`
+- Code is formatted: `uv run black geosmith tests`
+- Linting passes: `uv run ruff check .`
+- Documentation builds: `mkdocs build` (if applicable)
 - New features have tests
 - New features have documentation
 

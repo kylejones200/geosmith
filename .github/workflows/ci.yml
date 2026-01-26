@@ -12,28 +12,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: 'pip'
 
-      - name: Install deps
+      - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev,primitives,ml]"
+          uv sync --frozen --group dev --extra ml
 
       - name: Test (unit tests only)
         run: |
-          pytest -v --tb=short --maxfail=5 --durations=10 -m "not integration and not slow" --cov=geosmith --cov-report=term-missing --no-cov-on-fail
+          uv run pytest -v --tb=short --maxfail=5 --durations=10 -m "not integration and not slow" --cov=geosmith --cov-report=term-missing --no-cov-on-fail
 
       # Optional: non-blocking checks
       - name: Lint check (non-blocking)
         continue-on-error: true
         run: |
-          flake8 geosmith/ tests/ --max-line-length=88 --extend-ignore=E203,W503,D200 || echo "Linting issues found (non-blocking)"
+          uv run ruff check . || echo "Linting issues found (non-blocking)"
 
       - name: Type check (non-blocking)
         continue-on-error: true
         run: |
-          mypy geosmith/ || echo "Type check issues found (non-blocking)"
+          uv run mypy geosmith/ || echo "Type check issues found (non-blocking)"
